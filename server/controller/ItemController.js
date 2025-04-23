@@ -18,6 +18,20 @@ const createProject = async (req, res) => {
     }
 };
 
+
+const getAllProjects = async (req, res) => {
+    try {
+        const projects = await Project.find();
+        if (projects.length === 0) {
+            return res.status(404).json({ message: 'No projects found' });
+        }
+        res.status(200).json(projects);
+    } catch (err) {
+        console.error('Error fetching all projects:', err);
+        res.status(500).json({ error: 'Server error while fetching projects. Please try again later.' });
+    }
+};
+
 module.exports = {
-    createProject
+    createProject,getAllProjects
 };
