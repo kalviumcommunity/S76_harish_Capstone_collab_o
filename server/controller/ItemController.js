@@ -32,6 +32,25 @@ const getAllProjects = async (req, res) => {
     }
 };
 
+
+const updateProject = async (req, res) => {
+    try {
+        const updatedProject = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+        if (!updatedProject) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        res.status(200).json({ message: 'Project updated successfully', project: updatedProject });
+    } catch (err) {
+        console.error('Error updating project:', err);
+        if (err.kind === 'ObjectId') {
+            return res.status(400).json({ message: 'Invalid project ID format' });
+        }
+        res.status(500).json({ error: 'Server error while updating project. Please try again later.' });
+    }
+};
+
 module.exports = {
-    createProject,getAllProjects
+    createProject,getAllProjects,updateProject
 };
