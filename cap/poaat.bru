@@ -1,0 +1,25 @@
+meta {
+  name: poaat
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:5000/projects/post
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+  
+    "title": "app devoleopment",
+    "description": "Create a  app ecomerce",
+    "price": 1500,
+    "category": "app Development",
+    "image": "https://example.com/image.png",
+    "requiredSkills": ["react native", "CSS", "JavaScript"],
+    "deadline": "2025-06-14T00:00:00Z"
+  }
+  
+}
