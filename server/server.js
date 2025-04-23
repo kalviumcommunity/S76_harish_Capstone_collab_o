@@ -4,7 +4,7 @@ const express =require('express');
 const cors =require('cors');
 const connectDB=require('./config/db.js')
 
-const projectRoutes = require('./routes/routes');
+const projectRoutes = require('./routes/projectRoutes');
 
 const app =express();
 
@@ -19,5 +19,5 @@ app.use('/projects', projectRoutes);
 
 app.listen(PORT, () => {
 
-  console.log(`server is running at http://localhost:${PORT}`)
+  console.log('server is running at http://localhost:${PORT}')
 });
