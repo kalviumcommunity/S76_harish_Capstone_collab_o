@@ -13,7 +13,7 @@ const createProject = async (req, res) => {
         await newProject.save();
         res.status(201).json({ message: 'Project created successfully', project: newProject });
     } catch (err) {
-        console.error('Error creating project:', err);
+        console.error('Error in creating project:', err);
         res.status(500).json({ error: 'Server error while creating project. Please try again later.' });
     }
 };
