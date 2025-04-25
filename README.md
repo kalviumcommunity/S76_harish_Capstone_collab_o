@@ -25,7 +25,7 @@
 
 ---
 
-## Capstone Plan: Day-by-Day 🗓️
+## Capstone Plan: Day-by-Day 
 
 ### Week 1: MVP Setup & Planning
 - **Day 1:** Project idea finalization, requirement analysis.
@@ -70,7 +70,7 @@
 
 ---
 
-## Tech Stack 🧰
+## Tech Stack 
 - **Frontend:** React, TailwindCSS
 - **Backend:** Node.js, Express.js
 - **Database:** mongoDb or mySql
@@ -86,3 +86,8 @@
 3. Set up `.env` for DB and API keys
 4. Run frontend and backend (`npm run dev`)
 5. Start building, collaborating, and earning 💸
+
+
+## Backend deployment link
+
+I deployed my backend https://s76-harish-capstone-collab-o.onrender.com
