@@ -1,1 +1,11 @@
+
+@theme {
+    --font-sans: 'Roboto', sans-serif;
+  }
+  
+body {
+    @apply font-sans;
+  }
+  
+
 @import "tailwindcss";
