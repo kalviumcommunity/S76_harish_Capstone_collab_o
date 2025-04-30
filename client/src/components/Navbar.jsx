@@ -8,7 +8,7 @@ const Navbar = () => {
   const location = useLocation();
 
   const handleLearningClick = () => {
-    navigate('/learning')
+    navigate('/courseCreation')
   }
   const handleFreeLanceClick = () => {
     navigate('/freelance')
@@ -18,6 +18,13 @@ const Navbar = () => {
   }
   const handleSignupClick = () => {
     navigate('/signup')
+  }
+  const handleQuizClick = () => {
+    navigate('/modules')
+  }
+
+  const handleFormClick = () => {
+    navigate('/clientForm')
   }
 
   const getUnderlineStyle = (path) => {
@@ -39,7 +46,7 @@ const Navbar = () => {
           {/* Learning Link */}
           <div className="group relative mx-10 flex items-center">
             <h1 
-              className={`text-[#d6cdcd] text-[20px] cursor-pointer transition-all duration-300 hover:text-white flex items-center ${getUnderlineStyle('/learning')}`} 
+              className={`text-[#d6cdcd] text-[20px] cursor-pointer transition-all duration-300 hover:text-white flex items-center ${getUnderlineStyle('/courseCreation')}`} 
               onClick={handleLearningClick}
             >
               <BookOpen size={18} className="mr-2" /> Learning
@@ -81,17 +88,19 @@ const Navbar = () => {
           {/* Take quiz link */}
           <div className="group relative mx-10 flex items-center">
             <h1 
-              className={`text-[#d6cdcd] text-[20px] cursor-pointer transition-all duration-300 hover:text-white flex items-center ${getUnderlineStyle('/quiz')}`}
-            >
+              className={`text-[#d6cdcd] text-[20px] cursor-pointer transition-all duration-300 hover:text-white flex items-center ${getUnderlineStyle('/modules')}`}
+           onClick={handleQuizClick}
+           >
               <ClipboardCheck size={18} className="mr-2" /> Take quiz
             </h1>
           
             {/* shadow effect on hover */}
             <span 
-              className="absolute inset-0 flex items-center justify-center text-[20px] text-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
+              className="absolute inset-0 flex items-center cursor-pointer justify-center text-[20px] text-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
               style={{ 
                 textShadow: '0 0 15px rgba(158, 0, 215, 0.9), 0 0 25px rgba(158, 0, 215, 0.8), 0 0 35px rgba(158, 0, 215, 0.7)'
               }}
+              onClick={handleQuizClick}
             >
               <ClipboardCheck size={18} className="mr-2" /> Take quiz
             </span>
@@ -100,17 +109,19 @@ const Navbar = () => {
           {/* Hire Link */}
           <div className="group relative mx-10 flex items-center">
             <h1 
-              className={`text-[#d6cdcd] text-[20px] cursor-pointer transition-all duration-300 hover:text-white flex items-center ${getUnderlineStyle('/hire')}`}
-            >
+              className={`text-[#d6cdcd] text-[20px] cursor-pointer transition-all duration-300 hover:text-white flex items-center ${getUnderlineStyle('/clientForm')}`}
+            onClick={handleFormClick}
+           >
               <Users size={18} className="mr-2" /> Hire
             </h1>
           
             {/* shadow effect on hover */}
             <span 
-              className="absolute inset-0 flex items-center justify-center text-[20px] text-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
+              className="absolute inset-0 flex items-center justify-center cursor-pointer text-[20px] text-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
               style={{ 
                 textShadow: '0 0 15px rgba(158, 0, 215, 0.9), 0 0 25px rgba(158, 0, 215, 0.8), 0 0 35px rgba(158, 0, 215, 0.7)'
               }}
+              onClick={handleFormClick}
             >
               <Users size={18} className="mr-2" /> Hire
             </span>

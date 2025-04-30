@@ -3,8 +3,14 @@ import Navbar from '../components/Navbar'
 import FourBox from '../components/FourBox'
 import ThreeBoxes from '../components/ThreeBoxes'
 import Footer from '../components/Footer'
+import { useNavigate } from 'react-router-dom'
+
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const handlesignup = () => {
+    navigate('/signup')
+  }
   return (
     <>
         <Navbar />
@@ -17,7 +23,7 @@ const LandingPage = () => {
 
            <h1 className='text-[#626262] text-[20px] text-center pt-[30px]'>Grow and connect with clients using our AI-powered platform. Enhance your skills with AI learning, <br />take assessments, and easily land job opportunities tailored to your expertise.</h1>
 
-              <button className='h-[50px] w-[200px] bg-black text-white text-[20px] rounded-[5px] mx-auto mt-[60px] block border-2 border-[#9b25df] transition-all duration-300 ease-in-out  hover:rounded-full'>Get started  </button>
+              <button className='h-[50px] w-[200px] bg-black text-white text-[20px] rounded-[5px] mx-auto mt-[60px] block border-2 border-[#9b25df] transition-all duration-300 ease-in-out  hover:rounded-full' onClick={handlesignup}>Get started  </button>
          </div>
 
             <h1 className='text-black font-semibold pt-[50px] text-[60px] text-center'>
