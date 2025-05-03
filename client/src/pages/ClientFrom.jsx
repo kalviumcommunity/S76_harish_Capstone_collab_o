@@ -7,13 +7,60 @@ const ClientForm = () => {
     description: '',
     price: '',
     category: '',
-    image: null,
+    image: '', 
     requiredSkills: '',
     deadline: '',
   })
-  const [imagePreview, setImagePreview] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
-  // Dummy proposal data
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData({ ...formData, [name]: value })
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setSuccessMessage('')
+    setErrorMessage('')
+
+    try {
+      const response = await fetch('http://localhost:5000/projects/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          requiredSkills: formData.requiredSkills.split(',').map(skill => skill.trim()), // Convert to array
+        }),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setSuccessMessage('Project posted successfully!')
+        setFormData({
+          title: '',
+          description: '',
+          price: '',
+          category: '',
+          image: '',
+          requiredSkills: '',
+          deadline: '',
+        })
+      } else {
+        setErrorMessage(result.message || 'Failed to post project.')
+      }
+    } catch (error) {
+      setErrorMessage(error,'An error occurred. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const proposals = [
     {
       id: 1,
@@ -37,24 +84,6 @@ const ClientForm = () => {
     }
   ]
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
-  }
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setFormData({ ...formData, image: file })
-      setImagePreview(URL.createObjectURL(file))
-    }
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Form submitted:', formData)
-  }
-
   return (
     <>
       <Navbar />
@@ -74,6 +103,18 @@ const ClientForm = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                  {/* Success and Error Messages */}
+                  {successMessage && (
+                    <div className="bg-green-600 text-white text-center py-2 rounded">
+                      {successMessage}
+                    </div>
+                  )}
+                  {errorMessage && (
+                    <div className="bg-red-600 text-white text-center py-2 rounded">
+                      {errorMessage}
+                    </div>
+                  )}
+
                   {/* Title */}
                   <div>
                     <label className="block text-sm text-gray-300 mb-2">Project Title</label>
@@ -118,15 +159,22 @@ const ClientForm = () => {
                   {/* Category */}
                   <div>
                     <label className="block text-sm text-gray-300 mb-2">Category</label>
-                    <input
-                      type="text"
+                    <select
                       name="category"
-                      placeholder="Enter the category"
                       value={formData.category}
                       onChange={handleInputChange}
                       className="w-full h-[50px] bg-[#383838] text-white rounded-lg outline-none border-2 border-[#AB00EA] px-4 focus:border-[#d6a3e9] transition-all"
                       required
-                    />
+                    >
+                      <option value="">Select a category</option>
+                      <option value="All Projects">All Projects</option>
+                      <option value="Web Development">Web Development</option>
+                      <option value="Mobile Apps">Mobile Apps</option>
+                      <option value="UI/UX Design">UI/UX Design</option>
+                      <option value="Content Writing">Content Writing</option>
+                      <option value="Digital Marketing">Digital Marketing</option>
+                      <option value="Graphic Design">Graphic Design</option>
+                    </select>
                   </div>
 
                   {/* Required Skills */}
@@ -156,39 +204,26 @@ const ClientForm = () => {
                     />
                   </div>
 
-                  {/* Image Upload */}
-                  <div className="flex flex-col items-center gap-2">
-                    <label
-                      htmlFor="image-upload"
-                      className="w-[150px] h-[150px] bg-[#383838] border-2 border-[#AB00EA] text-white rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-[#4d4d4d] transition-all"
-                    >
-                      {imagePreview ? (
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      ) : (
-                        <span className="text-2xl font-semibold">+</span>
-                      )}
-                    </label>
+                  {/* Image URL */}
+                  <div>
+                    <label className="block text-sm text-gray-300 mb-2">Image URL</label>
                     <input
-                      id="image-upload"
-                      type="file"
+                      type="text"
                       name="image"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
+                      placeholder="Enter image URL"
+                      value={formData.image}
+                      onChange={handleInputChange}
+                      className="w-full h-[50px] bg-[#383838] text-white rounded-lg outline-none border-2 border-[#AB00EA] px-4 focus:border-[#d6a3e9] transition-all"
                     />
-                    <span className="text-sm text-gray-400">Upload an image for your project</span>
                   </div>
 
                   {/* Submit Button */}
                   <button
                     type="submit"
                     className="w-full h-[50px] bg-[#AB00EA] text-white text-[16px] font-semibold rounded-lg hover:bg-[#b670cf] transition-all shadow-lg hover:shadow-xl active:transform active:scale-[0.99]"
+                    disabled={loading}
                   >
-                    Submit Project
+                    {loading ? 'Submitting...' : 'Submit Project'}
                   </button>
                 </form>
               </div>

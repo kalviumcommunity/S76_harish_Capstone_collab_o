@@ -1,66 +1,62 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import ProjectCard from '../components/ProjectCard'
 import { FiSearch } from 'react-icons/fi'
 
 const categories = [
-  { name: 'All Projects', count: 150 },
-  { name: 'Web Development', count: 45 },
-  { name: 'Mobile Apps', count: 32 },
-  { name: 'UI/UX Design', count: 28 },
-  { name: 'Content Writing', count: 25 },
-  { name: 'Digital Marketing', count: 20 },
-  { name: 'Digital ', count: 20 }
-]
-
-const projects = [
-  {
-    id: 1,
-    title: 'Modern E-commerce Platform Development',
-    description: 'Looking for a full-stack developer to build a scalable e-commerce platform with advanced features including payment integration, real-time analytics, and inventory management.',
-    price: '4000',
-    duration: '8 weeks',
-    skills: ['React', 'Node.js', 'MongoDB', 'AWS'],
-    image: 'https://images.unsplash.com/photo-1517292987719-0369a794ec0f?q=80&w=1000&auto=format&fit=crop',
-    postedDate: '2025-04-27',
-    proposals: 12,
-    // clientRating: 4.9,
-    // clientCountry: '🇺🇸',
-    verified: true
-  },
-  {
-    id: 2,
-    title: 'iOS Social Media App Development',
-    description: 'Need an experienced mobile developer to create a social networking app with features like real-time messaging, media sharing, and location-based services.',
-    price: '5500',
-    duration: '12 weeks',
-    skills: ['Swift', 'Firebase', 'WebRTC', 'CoreData'],
-    image: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1000&auto=format&fit=crop',
-    postedDate: '2025-04-26',
-    proposals: 8,
-    // clientRating: 4.7,
-    // clientCountry: '🇬🇧',
-    verified: true
-  },
-  {
-    id: 3,
-    title: 'AI-Powered Content Management System',
-    description: 'Seeking a developer to build a CMS with AI capabilities for content optimization, automated tagging, and smart content recommendations.',
-    price: '6000',
-    duration: '10 weeks',
-    skills: ['Python', 'TensorFlow', 'Django', 'PostgreSQL'],
-    image: 'https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=1000&auto=format&fit=crop',
-    postedDate: '2025-04-27',
-    proposals: 15,
-    // clientRating: 4.8,
-    // clientCountry: '🇨🇦',
-    verified: true
-  }
+  { name: 'All Projects', count: 0 },
+  { name: 'Web Development', count: 0 },
+  { name: 'Mobile Apps', count: 0 },
+  { name: 'UI/UX Design', count: 0 },
+  { name: 'Content Writing', count: 0 },
+  { name: 'Digital Marketing', count: 0 },
+  { name: 'Graphic Design', count: 0 },
 ]
 
 const Freelance = () => {
   const [selectedCategory, setSelectedCategory] = useState('All Projects')
-  
+  const [projects, setProjects] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [categoryCounts, setCategoryCounts] = useState(categories)
+  const [loading, setLoading] = useState(false)
+  useEffect(() => {
+    // Fetch projects from backend API (adjust the URL as needed)
+    const fetchProjects = async () => {
+      setLoading(true) 
+      try {
+        const res = await fetch('http://localhost:5000/projects/')
+        const data = await res.json()
+        setProjects(data.projects || data)
+        // Calculate category counts
+        let counts = { 'All Projects': 0 }
+        data.forEach((p) => {
+          counts[p.category] = (counts[p.category] || 0) + 1
+          counts['All Projects'] += 1
+        })
+        setCategoryCounts(categories.map(cat => ({
+          ...cat,
+          count: counts[cat.name] || 0
+        })))
+      } catch (err) {
+        setProjects([err])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProjects()
+  }, [])
+
+  // Search and filter logic
+  const filteredProjects = projects.filter(project => {
+    const matchCategory = selectedCategory === 'All Projects' || project.category === selectedCategory
+    const matchSearch = (
+      project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (project.requiredSkills && project.requiredSkills.join(' ').toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+    return matchCategory && matchSearch
+  })
+
   return (
     <>
       <Navbar/>
@@ -81,11 +77,14 @@ const Freelance = () => {
                   type="text"
                   placeholder="Search projects by skill or keyword"
                   className='w-full h-14 pl-12 pr-4 rounded-xl border-2 border-white/20 bg-white/10  placeholder-white/60 outline-none  focus:border-white/40 transition-all text-lg'
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
                 />
               </div>
-              <button className='px-8 py-2 bg-white text-[#8d4fff] rounded-xl font-semibold hover:bg-gray-100 transition-all'>
+              {/*   search button if needed */}
+              {/* <button className='px-8 py-2 bg-white text-[#8d4fff] rounded-xl font-semibold hover:bg-gray-100 transition-all'>
                 Search
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -93,7 +92,7 @@ const Freelance = () => {
         <div className='w-[1000px] mx-auto px-8 py-8'>
           {/* Categories */}
           <div className='flex gap-4 mb-8'>
-            {categories.map((category, index) => (
+            {categoryCounts.map((category, index) => (
               <button 
                 key={index}
                 onClick={() => setSelectedCategory(category.name)}
@@ -109,12 +108,28 @@ const Freelance = () => {
             ))}
           </div>
 
-          {/* Projects Grid */}
-          <div className='space-y-6'>
-            {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
+          {loading ? ( // <-- loading spinner
+            <div className='text-center text-lg text-gray-700 py-20'>
+              <svg className="mx-auto mb-4 animate-spin h-10 w-10 text-[#8d4fff]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+              Loading projects...
+            </div>
+          ) : (
+              //   Projects Grid 
+            <div className='space-y-6'>
+              {filteredProjects.length === 0 && (
+                <div className='text-center text-gray-500 py-12'>No projects found.</div>
+              )}
+              {filteredProjects.map((project) => (
+                <ProjectCard key={project._id} project={project} />
+              ))}
+            </div>
+          )}
+
+       
+         
         </div>
       </div>
     </>
