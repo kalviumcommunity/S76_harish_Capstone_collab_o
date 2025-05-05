@@ -1,6 +1,7 @@
 const Project = require('../model/ProjectSchema');
 
 
+
 const createProject = async (req, res) => {
     try {
         
@@ -17,6 +18,9 @@ const createProject = async (req, res) => {
         res.status(500).json({ error: 'Server error while creating project. Please try again later.' });
     }
 };
+
+
+
 
 
 const getAllProjects = async (req, res) => {

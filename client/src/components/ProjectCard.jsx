@@ -2,6 +2,29 @@ import React from 'react'
 import { FiClock, FiUsers, FiDollarSign, FiBookmark } from 'react-icons/fi'
 
 const ProjectCard = ({ project }) => {
+  // Ensure compatibility with your new schema
+  // Fallbacks to avoid breaking UI if some fields are missing
+  const {
+    title = '',
+    description = '',
+    price = '',
+    // category = '',
+    image = '',
+    requiredSkills = [],
+    deadline = '',
+    // proposals = 0, // You may want to fetch proposals count from backend
+    _id
+  } = project
+
+  // Format deadline
+  let duration = ''
+  if (deadline) {
+    const daysLeft = Math.max(0, Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24)))
+    duration = daysLeft > 0 ? `${daysLeft} days left` : 'Deadline passed'
+  }
+
+
+
   return (
     <div className="relative">
       {/* Purple Border Effect */}
@@ -11,13 +34,13 @@ const ProjectCard = ({ project }) => {
       />
       
       {/* Main Card */}
-      <div className='relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden w-[1000px] z-10'>
+      <div className='relative bg-white rounded-xl shadow-lg hover:shadow-xl pt-[30px]  transition-all overflow-hidden h-[300px]  w-[1000px] z-10'>
         <div className='flex'>
           {/* Project Image */}
-          <div className='w-[240px] h-[240px] flex-shrink-0'>
+          <div className='w-[200px] h-[200px] flex-shrink-0'>
             <img 
-              src={project.image} 
-              alt={project.title}
+              src={image} 
+              alt={title}
               className='w-full h-full object-cover'
             />
           </div>
@@ -26,11 +49,11 @@ const ProjectCard = ({ project }) => {
           <div className='flex-1 p-6 w-[760px]'>
             <div className='flex justify-between items-start gap-4'>
               <div className='w-[650px]'>
-                <h2 className='text-xl font-semibold text-gray-800 mb-2'>{project.title}</h2>
-                <p className='text-gray-600 mb-4 line-clamp-2'>{project.description}</p>
+                <h2 className='text-xl font-semibold text-gray-800 mb-4'>{title}</h2>
+                <p className='text-gray-600 mb-8 line-clamp-2'>{description}</p>
                 
-                <div className='flex gap-2 flex-wrap mb-4'>
-                  {project.skills.map((skill, index) => (
+                <div className='flex gap-2 flex-wrap mb-8'>
+                  {requiredSkills.map((skill, index) => (
                     <span 
                       key={index}
                       className='px-3 py-1 bg-[#e3e2e2] text-[#8d4fff] rounded-full text-sm font-medium'
@@ -50,20 +73,23 @@ const ProjectCard = ({ project }) => {
               <div className='flex gap-6'>
                 <div className='flex items-center gap-2 text-gray-500'>
                   <FiDollarSign size={18} />
-                  <span className='font-semibold text-gray-700'>${project.price}</span>
+                  <span className='font-semibold text-gray-700'>${price}</span>
                 </div>
                 <div className='flex items-center gap-2 text-gray-500'>
                   <FiClock size={18} />
-                  <span>{project.duration}</span>
+                  <span>{duration}</span>
                 </div>
                 <div className='flex items-center gap-2 text-gray-500'>
                   <FiUsers size={18} />
-                  <span>{project.proposals} proposals</span>
+                  <span>{project.proposals || 0} proposals</span>
                 </div>
               </div>
 
               <div className='flex items-center gap-4'>
-                <button className='px-6 py-2 bg-[#8d4fff] text-white rounded-lg hover:bg-[#7c3fee] transition-all'>
+              <button
+             
+                  className='px-6 py-2 bg-[#8d4fff] text-white rounded-lg hover:bg-[#7c3fee] transition-all'
+                >
                   Apply Now
                 </button>
               </div>
