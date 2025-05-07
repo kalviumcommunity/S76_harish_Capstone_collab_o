@@ -10,11 +10,16 @@ import Quiz from './pages/Quiz';
 import ClientForm from './pages/ClientFrom';
 import CourseCreation from './pages/CourseCreation';
 
+import { AuthProvider } from './AuthProvider';
+
+import ClientDashboard from './pages/ClientDashboard';
+
 function App() {
  
 
   return (
     <>
+        <AuthProvider>
       <Router>
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -25,10 +30,12 @@ function App() {
             <Route path="/learning" element={<LearningUnit/>} />
             <Route path="/quiz" element={<Quiz/>} />
             <Route path="/clientForm" element={<ClientForm/>} />
+            <Route path="/clientDashBoard" element={<ClientDashboard/>} />
             <Route path="/courseCreation" element={<CourseCreation/>} />
           </Routes>
 
         </Router>
+        </AuthProvider>
     </>
   )
 }

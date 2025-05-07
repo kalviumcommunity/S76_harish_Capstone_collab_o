@@ -138,7 +138,7 @@ const Login = () => {
           <p className="text-center text-gray-400 mt-4">
             Don't have an account?{' '}
             <button className="text-[#AB00EA] hover:text-[#d6a3e9] font-medium transition-colors">
-              Register
+              here Register
             </button>
           </p>
         </div>

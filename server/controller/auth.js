@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
-const { OAuth2Client } = require('google-auth-library');
+// const { OAuth2Client } = require('google-auth-library');
 const User = require('../model/User');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -32,8 +32,7 @@ const signup = async (req, res) => {
         const user = new User({ username, email, password: hashedPassword });
         await user.save();
 
-        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
+     
     } catch (err) {
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -51,8 +50,6 @@ const login = async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
     } catch (err) {
         res.status(500).json({ error: 'Internal server error' });
     }
