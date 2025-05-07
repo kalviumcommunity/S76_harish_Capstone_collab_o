@@ -5,9 +5,9 @@ const {
     getAllProjects,
     updateProject,
     getProjectsByUser,
-} = require('../controllers/ProjectController');
-const authController = require('../controllers/auth'); // Import auth controller
-const authenticate = require('../middleware/AuthMiddleware'); // Import authentication middleware
+} = require('../controller/ItemController');
+const authController = require('../controller/auth'); // Import auth controller
+const authenticate = require('../middleware/AuthMiddleWare'); // Import authentication middleware
 
 // Authentication Routes
 router.post('/signup', authController.signup); // User signup
