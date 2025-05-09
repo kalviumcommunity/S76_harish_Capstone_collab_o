@@ -12,7 +12,7 @@ import CourseCreation from './pages/CourseCreation';
 
 import { AuthProvider } from './AuthProvider';
 
-import ClientDashboard from './pages/ClientDashboard';
+import ClientDashboard from './pages/ClientDash/ClientDashboard';
 
 function App() {
  
@@ -30,6 +30,7 @@ function App() {
             <Route path="/learning" element={<LearningUnit/>} />
             <Route path="/quiz" element={<Quiz/>} />
             <Route path="/clientForm" element={<ClientForm/>} />
+            <Route path="/clientForm/:id" element={<ClientForm/>} />
             <Route path="/clientDashBoard" element={<ClientDashboard/>} />
             <Route path="/courseCreation" element={<CourseCreation/>} />
           </Routes>

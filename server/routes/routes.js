@@ -5,18 +5,22 @@ const {
     getAllProjects,
     updateProject,
     getProjectsByUser,
+    deleteProject,
+    getProjectById
 } = require('../controller/ItemController');
-const authController = require('../controller/auth'); // Import auth controller
-const authenticate = require('../middleware/AuthMiddleWare'); // Import authentication middleware
+const authController = require('../controller/auth'); 
+const authenticate = require('../middleware/AuthMiddleWare'); 
 
-// Authentication Routes
-router.post('/signup', authController.signup); // User signup
-router.post('/login', authController.login);   // User login
+router.post('/signup', authController.signup); 
+router.post('/login', authController.login);   
 
-// Project Routes
-router.post('/create', authenticate, createProject); // Create a project (secured)
-router.put('/update/:id', authenticate, updateProject); // Update a project (secured)
+
+router.post('/create', authenticate, createProject); 
+router.put('/update/:id', authenticate, updateProject); 
 router.get('/', authenticate, getAllProjects); // Get all projects (secured)
-router.get('/user/:userId', authenticate, getProjectsByUser); // Get projects by user (secured)
+router.delete('/delete/:id', deleteProject); 
+router.get('/user/:userId', getProjectsByUser);// Get projects by user (secured)
+
+router.get('/:id', getProjectById);
 
 module.exports = router;

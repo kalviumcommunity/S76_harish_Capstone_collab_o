@@ -91,3 +91,8 @@
 ## Backend deployment link
 
 I deployed my backend https://s76-harish-capstone-collab-o.onrender.com
+
+
+## Frontend deployment link
+
+https://freecoll.netlify.app/
