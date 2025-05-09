@@ -18,7 +18,6 @@ const Login = () => {
     setFormData({ ...formData, [name]: value })
   }
 
-
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
@@ -34,8 +33,10 @@ const Login = () => {
         const data = await response.json()
         console.log('Login Success:', data)
 
-        // Save the token to local storage or cookies
+        // Save the token and userId in localStorage
         localStorage.setItem('token', data.token)
+        localStorage.setItem('userId', data.userId) // Store userId
+        console.log('Stored User ID:', data.userId)
 
         // Show success toast
         toast.success('Login successful! Redirecting...')
@@ -46,7 +47,7 @@ const Login = () => {
         }, 3000)
       } else {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'Login failed')
+        throw new Error(errorData.error || 'Login failed')
       }
     } catch (error) {
       console.error(error)
@@ -77,7 +78,6 @@ const Login = () => {
 
           {/* Google Login Button */}
           <button 
-            
             className="w-[450px] h-[60px] bg-white text-black rounded-lg flex items-center justify-center gap-3 mb-6 hover:bg-gray-100 transition-all border-2 border-[#AB00EA] shadow-[4px_4px_0px_0px_#AB00EA]"
           >
             <FcGoogle size={24} />
@@ -138,7 +138,7 @@ const Login = () => {
           <p className="text-center text-gray-400 mt-4">
             Don't have an account?{' '}
             <button className="text-[#AB00EA] hover:text-[#d6a3e9] font-medium transition-colors">
-              here Register
+              Register here
             </button>
           </p>
         </div>

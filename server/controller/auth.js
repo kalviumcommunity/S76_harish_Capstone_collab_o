@@ -1,11 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
-const { OAuth2Client } = require('google-auth-library');
 const User = require('../model/User');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
-
 
 const signupSchema = Joi.object({
     username: Joi.string().min(3).max(30).required(),
@@ -35,6 +33,7 @@ const signup = async (req, res) => {
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
         res.json({ token });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
@@ -52,15 +51,14 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
+        res.json({ token, userId: user._id }); // Include userId in the response
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
 
-
-
 module.exports = {
-    signup, login
-
-}
+    signup,
+    login,
+};
