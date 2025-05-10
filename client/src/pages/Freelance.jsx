@@ -84,7 +84,7 @@ const Freelance = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-[#f5e8f8]">
+      <div className="min-h-screen bg-[#121112]">
         {/* Hero Section */}
         <div className="w-full px-8 py-12 bg-[#a688d6]">
           <div className="w-[1000px] mx-auto">
@@ -121,7 +121,7 @@ const Freelance = () => {
                 onClick={() => setSelectedCategory(category.name)}
                 className={`px-6 py-3 rounded-xl flex items-center gap-2 transition-all ${
                   selectedCategory === category.name
-                    ? 'bg-black text-white'
+                    ? 'bg-gray-800 text-white'
                     : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
                 }`}
               >

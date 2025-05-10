@@ -1,6 +1,6 @@
 import React from 'react';
-import { FiClock, FiUsers, FiDollarSign, FiBookmark, FiCheckCircle, FiAward, FiTag } from 'react-icons/fi';
-import { motion } from 'framer-motion'; // For animations - install with: npm install framer-motion
+import { FiClock, FiUsers, FiDollarSign, FiBookmark, FiCheckCircle, FiAward, FiTag, FiCalendar } from 'react-icons/fi';
+import { motion } from 'framer-motion'; 
 
 const ProjectCard = ({ project }) => {
   const {
@@ -8,11 +8,12 @@ const ProjectCard = ({ project }) => {
     description = '',
     price = '',
     category = 'Design', // Default category
-    image = '',
+    // image = '',
     requiredSkills = [],
     deadline = '',
     status = 'active', // Add status field
-    _id
+    _id,
+    proposals = 0
   } = project;
 
   // Format deadline
@@ -28,94 +29,103 @@ const ProjectCard = ({ project }) => {
 
   return (
     <motion.div 
-      className="relative"
+      className="relative w-full"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Purple Border Effect */}
-      <div 
-        className={`absolute inset-0 ${isCompleted ? 'bg-emerald-500' : 'bg-[#AB00EA]'} rounded-xl translate-x-[8px] translate-y-[8px]`}
-        aria-hidden="true"
-      />
-      
       {/* Main Card */}
-      <div className='relative bg-white rounded-xl shadow-xl hover:shadow-2xl transition-all overflow-hidden border border-gray-100 z-10'>
-        {/* Status Badge - Only show if completed */}
-        {isCompleted && (
-          <div className="absolute top-4 right-4 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium flex items-center z-20">
-            <FiCheckCircle className="mr-1" />
-            Completed
-          </div>
-        )}
-
-        <div className='flex'>
-          {/* Project Image with Category Badge */}
-          <div className='relative w-56 h-64 flex-shrink-0'>
-            <img 
-              src={image} 
-              alt={title}
-              className='w-full h-full object-cover'
-            />
-            <div className="absolute bottom-3 left-3 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center">
-              <FiTag className="mr-1" size={12} />
-              {category}
-            </div>
-          </div>
-
-          {/* Project Details */}
-          <div className='flex-1 p-6 flex flex-col h-64'>
-            <div className='flex justify-between items-start gap-4 mb-2'>
-              <div className='flex-1'>
-                <h2 className='text-xl font-bold text-gray-800 mb-2'>{title}</h2>
-                <p className='text-gray-600 mb-4 line-clamp-2'>{description}</p>
-              </div>
-              <button className='flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-200 hover:border-[#8d4fff] text-gray-400 hover:text-[#8d4fff] transition-all group'>
+      <div className="bg-gradient-to-br from-[#2D2D2D] to-[#252525] rounded-lg overflow-hidden border-2 border-[#3a3a3a] hover:border-[#AB00EA] transition-all shadow-lg group">
+        {/* Status Bar */}
+        <div className={`h-1 w-full ${isCompleted ? 'bg-green-500' : 'bg-[#AB00EA]'}`}></div>
+        
+        <div className="p-5">
+          {/* Header with Title and Status */}
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-white font-bold text-xl tracking-tight group-hover:text-[#AB00EA] transition-colors">
+              {title}
+            </h3>
+            <div className="flex items-center gap-2">
+              <button className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-[#3a3a3a] hover:border-[#AB00EA] text-gray-400 hover:text-[#AB00EA] transition-all group bg-[#1A1A1A]">
                 <FiBookmark size={18} className="group-hover:scale-110 transition-transform" />
               </button>
+              <span className={`
+                ${isCompleted ? 'bg-green-900 text-green-300' : 'bg-[#3D2463] text-[#D4A6FF]'} 
+                text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1
+              `}>
+                {isCompleted ? <FiCheckCircle size={12} /> : <FiClock size={12} />}
+                {isCompleted ? 'Completed' : 'Active'}
+              </span>
+            </div>
+          </div>
+          
+          {/* Main Content Area with 3 Sections */}
+          <div className="flex flex-col md:flex-row gap-4 mb-5">
+            {/* Left Column - Price and Category */}
+            <div className="md:w-1/4 flex flex-col gap-2">
+              <div className="bg-[#1A1A1A] rounded-lg p-3 flex flex-col items-center justify-center border border-[#333333]">
+                <FiDollarSign size={18} className="text-[#AB00EA] mb-1" />
+                <span className="text-white font-medium text-lg">${price}</span>
+                <span className="text-xs text-gray-400">Budget</span>
+              </div>
+              
+              <div className="bg-[#1A1A1A] rounded-lg p-3 flex flex-col items-center justify-center border border-[#333333]">
+                <FiTag size={18} className="text-[#AB00EA] mb-1" />
+                <span className="text-white font-medium">{category}</span>
+                <span className="text-xs text-gray-400">Category</span>
+              </div>
             </div>
             
-            {/* Skills Section with hover effects */}
-            <div className='flex gap-2 flex-wrap mb-auto'>
-              {requiredSkills.map((skill, index) => (
-                <span 
-                  key={index}
-                  className='px-3 py-1 bg-[#f4f0ff] text-[#8d4fff] rounded-full text-sm font-medium hover:bg-[#ebe3ff] transition-colors cursor-default'
-                >
-                  {skill}
-                </span>
-              ))}
+            {/* Center Column - Description */}
+            <div className="md:w-2/4 flex flex-col">
+              <div className="bg-[#1A1A1A] rounded-lg p-4 border border-[#333333] h-full flex flex-col">
+                <h4 className="text-[#AB00EA] text-sm font-medium mb-2">Project Description</h4>
+                <p className="text-gray-300 text-sm flex-grow">{description}</p>
+                
+                {/* Deadline in the bottom of center column */}
+                <div className="mt-3 pt-3 border-t border-[#333333] flex items-center justify-center">
+                  <FiCalendar size={14} className="text-[#AB00EA] mr-2" />
+                  <span className={`text-gray-300 text-sm ${isExpired ? 'text-red-400' : ''}`}>{duration}</span>
+                </div>
+              </div>
             </div>
-
-            {/* Project Meta - Fixed at bottom */}
-            <div className='flex items-center justify-between pt-4 border-t border-gray-100 mt-4'>
-              <div className='flex gap-6'>
-                <div className='flex items-center gap-2 text-gray-700'>
-                  <FiDollarSign size={18} className="text-[#8d4fff]" />
-                  <span className='font-bold'>${price}</span>
-                </div>
-                <div className='flex items-center gap-2 text-gray-700'>
-                  <FiClock size={18} className={isExpired ? 'text-red-500' : 'text-[#8d4fff]'} />
-                  <span className={isExpired ? 'text-red-500 font-medium' : ''}>{duration}</span>
-                </div>
-                <div className='flex items-center gap-2 text-gray-700'>
-                  <FiUsers size={18} className="text-[#8d4fff]" />
-                  <span>{project.proposals || 0} proposals</span>
-                </div>
+            
+            {/* Right Column - Skills */}
+            <div className="md:w-1/4 bg-[#1A1A1A] rounded-lg p-3 border border-[#333333]">
+              <h4 className="text-[#AB00EA] text-sm font-medium mb-2">Required Skills</h4>
+              <div className="flex flex-wrap gap-2">
+                {requiredSkills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="bg-[#252525] text-gray-300 text-xs px-2 py-1 rounded-full border border-[#3D2463] hover:border-[#AB00EA] hover:text-[#D4A6FF] transition-colors"
+                  >
+                    {skill}
+                  </span>
+                ))}
               </div>
-
-              <div className='flex items-center gap-4'>
-                <button
-                  disabled={isCompleted}
-                  className={`px-6 py-2 rounded-lg text-white font-medium transition-all flex items-center gap-2
-                    ${isCompleted 
-                      ? 'bg-gray-300 cursor-not-allowed' 
-                      : 'bg-[#8d4fff] hover:bg-[#7c3fee] shadow-md hover:shadow-lg hover:shadow-[#8d4fff]/20'}`}
-                >
-                  {isCompleted ? 'Closed' : 'Apply Now'}
-                  {!isCompleted && <FiAward size={16} />}
-                </button>
+            </div>
+          </div>
+          
+          {/* Footer Info and Apply Button */}
+          <div className="flex flex-wrap justify-between items-center gap-3 mt-2">
+            <div className="flex gap-4">
+              <div className="flex items-center gap-1 text-gray-300">
+                <FiUsers size={16} className="text-[#AB00EA]" />
+                <span className="text-sm">{proposals} proposals</span>
               </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <button
+                disabled={isCompleted}
+                className={`px-6 py-2 rounded-lg text-white font-medium transition-all flex items-center gap-2
+                  ${isCompleted 
+                    ? 'bg-gray-600 cursor-not-allowed' 
+                    : 'bg-[#3D2463] hover:bg-[#9500ca] shadow-md hover:shadow-[#AB00EA]/20 hover:shadow-lg'}`}
+              >
+                {isCompleted ? 'Closed' : 'Apply Now'}
+                {!isCompleted && <FiAward size={16} />}
+              </button>
             </div>
           </div>
         </div>

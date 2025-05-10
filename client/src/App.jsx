@@ -10,6 +10,8 @@ import Quiz from './pages/Quiz';
 import ClientForm from './pages/ClientFrom';
 import CourseCreation from './pages/CourseCreation';
 
+import Profile from './pages/Profile';
+
 import { AuthProvider } from './AuthProvider';
 
 import ClientDashboard from './pages/ClientDash/ClientDashboard';
@@ -33,6 +35,7 @@ function App() {
             <Route path="/clientForm/:id" element={<ClientForm/>} />
             <Route path="/clientDashBoard" element={<ClientDashboard/>} />
             <Route path="/courseCreation" element={<CourseCreation/>} />
+            <Route path="/profile" element={<Profile/>} />
           </Routes>
 
         </Router>
