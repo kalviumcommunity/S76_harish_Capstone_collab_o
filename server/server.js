@@ -4,6 +4,8 @@ const express =require('express');
 const cors =require('cors');
 const connectDB=require('./config/db.js')
 
+const courseAIRoutes = require('./routes/courseRoutes');
+
 const projectRoutes = require('./routes/routes');
 const authRoutes = require('./routes/routes');  
 
@@ -25,6 +27,8 @@ connectDB();
 app.use('/projects', projectRoutes);  
 
 app.use('/auth', authRoutes); 
+
+app.use('/api/ai-course', courseAIRoutes);
 
 app.listen(PORT, () => {
 
