@@ -120,7 +120,7 @@ const ClientForm = () => {
         }
 
         // Redirect back to dashboard after a short delay
-        setTimeout(() => navigate('/clinetDashboard'), 2000);
+        setTimeout(() => navigate('/clientDashboard'), 2000);
       } else {
         setErrorMessage(result.message || 'Failed to submit project.');
       }

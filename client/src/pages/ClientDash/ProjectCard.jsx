@@ -1,103 +1,118 @@
 import React from 'react';
-import { Edit, Trash2, Calendar, DollarSign, Tag, CheckCircle, Clock } from 'lucide-react';
+import { FiClock, FiUsers, FiDollarSign, FiBookmark, FiCheckCircle, FiAward, FiTag, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { motion } from 'framer-motion'; // For animations - install with: npm install framer-motion
 
 const ProjectCard = ({ project, onEdit, onDelete }) => {
-  // Determine if project is active or completed based on status
-  const isCompleted = project.status === 'completed';
+  // Extract project properties with defaults
+  const {
+    title = '',
+    description = '',
+    price = '',
+    category = 'Design', // Default category
+    requiredSkills = [],
+    deadline = '',
+    status = 'active',
+    _id
+  } = project;
+
   
-  // Format deadline to show days remaining
-  const calculateTimeLeft = () => {
-    const difference = new Date(project.deadline) - new Date();
-    const daysLeft = Math.ceil(difference / (1000 * 60 * 60 * 24));
-    return daysLeft > 0 ? `${daysLeft} days left` : 'Deadline passed';
-  };
+  // Format deadline
+
+  let duration = '';
+  let isExpired = false;
+  if (deadline) {
+    const daysLeft = Math.max(0, Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24)));
+    isExpired = daysLeft === 0;
+    duration = daysLeft > 0 ? `${daysLeft} days left` : 'Deadline passed';
+  }
+
+  const isCompleted = status === 'completed';
 
   return (
-    <div className="bg-gradient-to-br from-[#2D2D2D] to-[#252525] hover:scale-100 transform  rounded-lg overflow-hidden border-2 border-[#3a3a3a] hover:border-[#5e7eff] transition-all shadow-lg group">
-      {/* Status Bar - Conditionally colored based on project status */}
-      <div className={`h-1 w-full ${isCompleted ? 'bg-green-500' : 'bg-[#AB00EA]'}`}></div>
+    <motion.div 
+      className="relative"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Purple Border Effect */}
+      <div 
+        className={`absolute inset-0 ${isCompleted ? 'bg-emerald-500' : 'bg-[#AB00EA]'} rounded-xl translate-x-[8px] translate-y-[8px]`}
+        aria-hidden="true"
+      />
       
-      <div className="p-5">
-        {/* Header with Title and Status */}
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-white font-bold text-xl tracking-tight group-hover:text-[#AB00EA] transition-colors">
-            {project.title}
-          </h3>
-          <span className={`
-            ${isCompleted ? 'bg-green-900 text-green-300' : 'bg-[#3D2463] text-[#D4A6FF]'} 
-            text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1
-          `}>
-            {isCompleted ? <CheckCircle size={12} /> : <Clock size={12} />}
-            {isCompleted ? 'Completed' : 'Active'}
-          </span>
-        </div>
-        
-        {/* Main Content Area with 3 Sections: Left Metadata, Center Description, Right Metadata */}
-        <div className="flex flex-col md:flex-row gap-4 mb-5">
-          {/* Left Column - Price and Category */}
-          <div className="md:w-1/4 flex flex-col gap-2">
-            <div className="bg-[#1A1A1A] rounded-lg p-3 flex flex-col items-center justify-center border border-[#333333]">
-              <DollarSign size={18} className="text-[#AB00EA] mb-1" />
-              <span className="text-white font-medium text-lg">${project.price}</span>
-              <span className="text-xs text-gray-400">Budget</span>
-            </div>
-            
-            <div className="bg-[#1A1A1A] rounded-lg p-3 flex flex-col items-center justify-center border border-[#333333]">
-              <Tag size={18} className="text-[#AB00EA] mb-1" />
-              <span className="text-white font-medium">{project.category}</span>
-              <span className="text-xs text-gray-400">Category</span>
-            </div>
+      {/* Main Card */}
+      <div className='relative bg-zinc-900 rounded-xl  shadow-xl hover:shadow-2xl transition-all overflow-hidden border border-gray-100 z-10'>
+        {/* Status Badge - Only show if completed */}
+        {isCompleted && (
+          <div className="absolute top-4 right-4 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium flex items-center z-20">
+            <FiCheckCircle className="mr-1" />
+            Completed
           </div>
-          
-          {/* Center Column - Description */}
-          <div className="md:w-2/4 flex flex-col">
-            <div className="bg-[#1A1A1A] rounded-lg p-4 border border-[#333333] h-full flex flex-col">
-              <h4 className="text-[#AB00EA] text-sm font-medium mb-2">Project Description</h4>
-              <p className="text-gray-300 text-sm flex-grow">{project.description}</p>
-              
-              {/* Deadline in the bottom of center column */}
-              <div className="mt-3 pt-3 border-t border-[#333333] flex items-center justify-center">
-                <Calendar size={14} className="text-[#AB00EA] mr-2" />
-                <span className="text-gray-300 text-sm">{calculateTimeLeft()}</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Right Column - Skills */}
-          <div className="md:w-1/4 bg-[#1A1A1A] rounded-lg p-3 border border-[#333333]">
-            <h4 className="text-[#AB00EA] text-sm font-medium mb-2">Required Skills</h4>
-            <div className="flex flex-wrap gap-2">
-              {project.requiredSkills?.map((skill, index) => (
-                <span
-                  key={index}
-                  className="bg-[#252525] text-gray-300 text-xs px-2 py-1 rounded-full border border-[#3D2463] hover:border-[#AB00EA] hover:text-[#D4A6FF] transition-colors"
-                >
-                  {skill}
+        )}
+
+        {/* Project Details - Full width since we removed the image */}
+        <div className='p-6 flex flex-col'>
+          <div className='flex justify-between items-start gap-4 mb-2'>
+            <div className='flex-1'>
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className='text-xl font-bold text-white'>{title}</h2>
+                <span className="bg-green-400/50 text-white px-3 py-1 rounded-full text-xs font-medium flex ml-[1020px] absolute">
+                  <FiTag className="mr-1" size={12} />
+                  {category}
                 </span>
-              ))}
+              </div>
+              <p className='text-gray-400 mb-4 line-clamp-2'>{description}</p>
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => onEdit && onEdit(project._id)}
+                className='flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-200 hover:border-[#8d4fff] text-gray-400 hover:text-[#8d4fff] transition-all group'
+                title="Edit Project"
+              >
+                <FiEdit size={18} className="group-hover:scale-110 transition-transform" />
+              </button>
+              <button 
+                onClick={() => onDelete && onDelete(project._id)}
+                className='flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-200 hover:border-red-500 text-gray-400 hover:text-red-500 transition-all group'
+                title="Delete Project"
+              >
+                <FiTrash2 size={18} className="group-hover:scale-110 transition-transform" />
+              </button>
             </div>
           </div>
-        </div>
-        
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => onEdit(project._id)}
-            className="items-center w-[150px] flex justify-center gap-2  bg-[#3D2463] hover:bg-[#9500ca] text-white px-4 py-2 rounded-md transition-all text-sm font-medium shadow-md hover:shadow-[#AB00EA]/20 hover:shadow-lg"
-          >
-            <Edit size={16} />
-            <span>Edit Project</span>
-          </button>
-          <button
-            onClick={() => onDelete(project._id)}
-            className="w-12 flex items-center justify-center bg-[#1A1A1A] hover:bg-red-900 text-red-500 hover:text-white rounded-md transition-all border border-[#333333] hover:border-red-700"
-            title="Delete Project"
-          >
-            <Trash2 size={16} />
-          </button>
+          
+          {/* Skills Section with hover effects */}
+          <div className='flex gap-2 flex-wrap mb-6'>
+            {requiredSkills.map((skill, index) => (
+              <span 
+                key={index}
+                className='px-3 py-1 bg-[#f4f0ff] text-[#8d4fff] rounded-full text-sm font-medium hover:bg-[#ebe3ff] transition-colors cursor-default'
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+
+          {/* Project Meta */}
+          <div className='flex items-center justify-between pt-4 border-t border-gray-100'>
+            <div className='flex gap-6'>
+              <div className='flex items-center gap-2 text-gray-700'>
+                <FiDollarSign size={18} className="text-[#8d4fff]" />
+                <span className='font-bold'>${price}</span>
+              </div>
+              <div className='flex items-center gap-2 text-gray-700'>
+                <FiClock size={18} className={isExpired ? 'text-red-500' : 'text-[#8d4fff]'} />
+                <span className={isExpired ? 'text-red-500 font-medium' : ''}>{duration}</span>
+              </div>
+              
+            </div>
+
+           
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
