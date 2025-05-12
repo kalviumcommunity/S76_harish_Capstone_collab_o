@@ -1,31 +1,88 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FiClock, FiUsers, FiDollarSign, FiBookmark, FiCheckCircle, FiAward, FiTag, FiCalendar } from 'react-icons/fi';
 import { motion } from 'framer-motion'; 
+import io from 'socket.io-client';
+
+// Create a socket connection
+const socket = io('http://localhost:5000');
 
 const ProjectCard = ({ project }) => {
+  const freelancerId = localStorage.getItem('userId'); // get user ID from localStorage
+
   const {
     title = '',
     description = '',
     price = '',
-    category = 'Design', // Default category
-    // image = '',
+    category = 'Design',
     requiredSkills = [],
     deadline = '',
-    status = 'active', // Add status field
+    status = 'active',
     _id,
     proposals = 0
   } = project;
 
+  const [message, setMessage] = useState(''); // Freelancer's message for the proposal
+  const [isApplied, setIsApplied] = useState(false); // Track if freelancer has applied
+
   // Format deadline
-  let duration = '';
+  let durationText = '';
   let isExpired = false;
   if (deadline) {
     const daysLeft = Math.max(0, Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24)));
     isExpired = daysLeft === 0;
-    duration = daysLeft > 0 ? `${daysLeft} days left` : 'Deadline passed';
+    durationText = daysLeft > 0 ? `${daysLeft} days left` : 'Deadline passed';
   }
 
   const isCompleted = status === 'completed';
+
+  // Handle form field changes
+  const handleMessageChange = (e) => setMessage(e.target.value);
+
+  // Handle "Apply Now" button click
+  const handleApplyNow = async () => {
+    if (isCompleted || isApplied) return; // Prevent applying if the project is completed or already applied
+
+    if (!message) {
+      alert('Please write a message before applying!');
+      return;
+    }
+
+    const proposalData = {
+      freelancerId, // Freelancer's user ID
+      projectId: _id, // Project ID
+      message: message, // Custom message
+    };
+
+    try {
+      // Send POST request to create the proposal
+      const response = await fetch('http://localhost:5000/api/proposals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(proposalData),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setIsApplied(true); // Mark as applied
+        alert(`Your proposal message: "${message}"`); // Show proposal message in alert
+
+        // Emit a WebSocket event to notify the client of the new proposal submission
+        socket.emit('proposalSubmitted', {
+          freelancerId,
+          projectId: _id,
+          proposalId: data._id,
+        });
+      } else {
+        alert('Failed to submit the proposal!');
+      }
+    } catch (err) {
+      console.error('Error submitting proposal:', err);
+      alert('There was an error. Please try again.');
+    }
+  };
 
   return (
     <motion.div 
@@ -59,7 +116,7 @@ const ProjectCard = ({ project }) => {
             </div>
           </div>
           
-          {/* Main Content Area with 3 Sections */}
+          {/* Main Content Area */}
           <div className="flex flex-col md:flex-row gap-4 mb-5">
             {/* Left Column - Price and Category */}
             <div className="md:w-1/4 flex flex-col gap-2">
@@ -75,21 +132,21 @@ const ProjectCard = ({ project }) => {
                 <span className="text-xs text-gray-400">Category</span>
               </div>
             </div>
-            
+
             {/* Center Column - Description */}
             <div className="md:w-2/4 flex flex-col">
               <div className="bg-[#1A1A1A] rounded-lg p-4 border border-[#333333] h-full flex flex-col">
                 <h4 className="text-[#AB00EA] text-sm font-medium mb-2">Project Description</h4>
                 <p className="text-gray-300 text-sm flex-grow">{description}</p>
-                
-                {/* Deadline in the bottom of center column */}
+
+                {/* Deadline */}
                 <div className="mt-3 pt-3 border-t border-[#333333] flex items-center justify-center">
                   <FiCalendar size={14} className="text-[#AB00EA] mr-2" />
-                  <span className={`text-gray-300 text-sm ${isExpired ? 'text-red-400' : ''}`}>{duration}</span>
+                  <span className={`text-gray-300 text-sm ${isExpired ? 'text-red-400' : ''}`}>{durationText}</span>
                 </div>
               </div>
             </div>
-            
+
             {/* Right Column - Skills */}
             <div className="md:w-1/4 bg-[#1A1A1A] rounded-lg p-3 border border-[#333333]">
               <h4 className="text-[#AB00EA] text-sm font-medium mb-2">Required Skills</h4>
@@ -105,7 +162,7 @@ const ProjectCard = ({ project }) => {
               </div>
             </div>
           </div>
-          
+
           {/* Footer Info and Apply Button */}
           <div className="flex flex-wrap justify-between items-center gap-3 mt-2">
             <div className="flex gap-4">
@@ -114,16 +171,27 @@ const ProjectCard = ({ project }) => {
                 <span className="text-sm">{proposals} proposals</span>
               </div>
             </div>
-            
+
+            {/* Form for Message */}
+            <div className="flex flex-col gap-3 mt-3">
+              <textarea 
+                className="p-2 bg-[#252525] text-white rounded-md border border-[#333333]"
+                placeholder="Write your proposal message"
+                value={message}
+                onChange={handleMessageChange}
+              />
+            </div>
+
             <div className="flex items-center gap-4">
               <button
-                disabled={isCompleted}
+                disabled={isCompleted || isApplied}
+                onClick={handleApplyNow}
                 className={`px-6 py-2 rounded-lg text-white font-medium transition-all flex items-center gap-2
-                  ${isCompleted 
+                  ${isCompleted || isApplied
                     ? 'bg-gray-600 cursor-not-allowed' 
                     : 'bg-[#3D2463] hover:bg-[#9500ca] shadow-md hover:shadow-[#AB00EA]/20 hover:shadow-lg'}`}
               >
-                {isCompleted ? 'Closed' : 'Apply Now'}
+                {isCompleted ? 'Closed' : isApplied ? 'Applied' : 'Apply Now'}
                 {!isCompleted && <FiAward size={16} />}
               </button>
             </div>

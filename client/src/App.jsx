@@ -16,6 +16,9 @@ import { AuthProvider } from './AuthProvider';
 
 import ClientDashboard from './pages/ClientDash/ClientDashboard';
 
+import ProposalsPage from './pages/ClientDash/ProposalPage';
+import MessagePage from './pages/ClientDash/MessagePanel';
+
 function App() {
  
 
@@ -36,6 +39,8 @@ function App() {
             <Route path="/clientDashBoard" element={<ClientDashboard/>} />
             <Route path="/courseCreation" element={<CourseCreation/>} />
             <Route path="/profile" element={<Profile/>} />
+            <Route path="/projects/:projectId/" element={<ProposalsPage />} />
+            <Route path="/messages/:proposalId" element={<MessagePage />} />
           </Routes>
 
         </Router>

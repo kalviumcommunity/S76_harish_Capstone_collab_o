@@ -86,9 +86,9 @@ const Freelance = () => {
       <Navbar />
       <div className="min-h-screen bg-[#121112]">
         {/* Hero Section */}
-        <div className="w-full px-8 py-12 bg-[#a688d6]">
+        <div className="w-full px-8 py-12 bg-[#2c1c45]">
           <div className="w-[1000px] mx-auto">
-            <h1 className="text-4xl font-bold text-black mb-4">Find Your Next Project</h1>
+            <h1 className="text-4xl font-bold text-white mb-4">Find Your Next Project</h1>
             <p className="text-gray-600 text-lg mb-8">
               {projects.length.toLocaleString()} available projects for talented freelancers
             </p>
