@@ -17,7 +17,7 @@ import { AuthProvider } from './AuthProvider';
 import ClientDashboard from './pages/ClientDash/ClientDashboard';
 
 import ProposalsPage from './pages/ClientDash/ProposalPage';
-import MessagePage from './pages/ClientDash/MessagePanel';
+import MessagingPage from './pages/MessagingPage';    
 
 function App() {
  
@@ -40,7 +40,7 @@ function App() {
             <Route path="/courseCreation" element={<CourseCreation/>} />
             <Route path="/profile" element={<Profile/>} />
             <Route path="/projects/:projectId/" element={<ProposalsPage />} />
-            <Route path="/messages/:proposalId" element={<MessagePage />} />
+            <Route path="/messages/:conversationId" element={<MessagingPage />} />
           </Routes>
 
         </Router>

@@ -1,7 +1,5 @@
 require('dotenv').config({ path: './config/.env' });
 
-const http = require('http');
-const socketio = require('socket.io');
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db.js');
@@ -10,13 +8,9 @@ const courseAIRoutes = require('./routes/courseRoutes');
 const projectRoutes = require('./routes/routes');
 const authRoutes = require('./routes/routes');
 const proposalRoutes = require('./routes/ProposalRoutes');
-const socketHandler = require('./socket/socketHandler');
+const messagingRoutes = require('./controller/messaging');
 
 const app = express();
-const server = http.createServer(app);
-const io = socketio(server, {
-  cors: { origin: '*' },
-});
 
 const PORT = process.env.PORT || 5000;
 
@@ -30,16 +24,14 @@ app.use(express.json());
 // Database connection
 connectDB();
 
-// Socket handling
-socketHandler(io);
-
 // API routes
 app.use('/projects', projectRoutes);
 app.use('/auth', authRoutes);
 app.use('/api/ai-course', courseAIRoutes);
 app.use('/api/proposals', proposalRoutes);
+app.use('/api/messaging', messagingRoutes);
 
 // Start the server
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });

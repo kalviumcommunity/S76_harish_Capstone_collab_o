@@ -53,15 +53,9 @@ const ProposalsPage = () => {
     }
   };
 
-  const handleAccept = async (proposalId) => {
-    // Check if any proposal is already accepted
-    const acceptedProposal = proposals.find(p => p.status === 'accepted');
-    if (acceptedProposal) {
-      toast.error('You have already accepted a proposal for this project.');
-      return;
-    }
-
+  const handleAccept = async (proposalId, freelancerId) => {
     try {
+      // Accept the proposal
       const res = await fetch(`http://localhost:5000/api/proposals/${proposalId}/accept`, {
         method: 'POST',
         headers: {
@@ -71,10 +65,26 @@ const ProposalsPage = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to accept proposal');
-      
+  
       toast.success('Proposal accepted successfully!');
-      // Refresh the proposals to get updated status from backend
-      fetchProposals();
+  
+      // Create or fetch the conversation
+      const conversationRes = await fetch('http://localhost:5000/api/messaging/conversation', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clientId: localStorage.getItem('userId'),
+          freelancerId,
+        }),
+      });
+      const conversation = await conversationRes.json();
+      if (!conversationRes.ok) throw new Error('Failed to create or fetch conversation');
+  
+      // Redirect to the messaging page
+      navigate(`/messages/${conversation._id}`);
     } catch (error) {
       toast.error(error.message || 'Something went wrong while accepting the proposal.');
     }

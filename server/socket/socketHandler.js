@@ -1,30 +1,62 @@
-module.exports = (io) => {
-  io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
+// const Message = require('../models/Message');
+// const Conversation = require('../models/Conversation');
 
-    // Join a specific room using the proposalId as the roomId
-    socket.on('joinRoom', ({ roomId }) => {
-      socket.join(roomId);
-      console.log(`Socket ${socket.id} joined room ${roomId}`);
-    });
+// const socketHandler = (io) => {
+//   io.on('connection', (socket) => {
+//     console.log('A user connected:', socket.id);
+    
+//     // Join a specific conversation room
+//     socket.on('joinRoom', ({ conversationId }) => {
+//       socket.join(conversationId);
+//       console.log(`User ${socket.id} joined conversation ${conversationId}`);
+//     });
+    
+//     // Leave a specific conversation room
+//     socket.on('leaveRoom', ({ conversationId }) => {
+//       socket.leave(conversationId);
+//       console.log(`User ${socket.id} left conversation ${conversationId}`);
+//     });
+    
+//     socket.on('sendMessage', async ({ conversationId, senderId, text }) => {
+//       try {
+//         const conversation = await Conversation.findById(conversationId);
 
-    // Handle sending messages to a specific room
-    socket.on('message', ({ roomId, message }) => {
-      const broadcastMessage = {
-        message,
-        isSender: false, // Mark the message as received for others
-        createdAt: new Date(),
-      };
+//         if (!conversation) {
+//           return socket.emit('errorMessage', 'Conversation not found.');
+//         }
 
-      // Emit the message to all clients in the room
-      io.to(roomId).emit('message', broadcastMessage);
+//         // Check if chat is active
+//         if (!conversation.isActive) {
+//           return socket.emit('errorMessage', 'This project is completed. Messaging is disabled.');
+//         }
 
-      console.log(`Message sent to room ${roomId}:`, message);
-    });
+//         // Check if sender is a participant
+//         const isParticipant = conversation.participants.some(
+//           (participantId) => participantId.toString() === senderId
+//         );
 
-    // Handle client disconnection
-    socket.on('disconnect', () => {
-      console.log('Client disconnected:', socket.id);
-    });
-  });
-};
+//         if (!isParticipant) {
+//           return socket.emit('errorMessage', 'You are not authorized to send messages in this conversation.');
+//         }
+
+//         // Create and emit message
+//         const message = await Message.create({
+//           conversationId,
+//           senderId,
+//           text,
+//         });
+
+//         io.to(conversationId).emit('receiveMessage', message);
+//       } catch (error) {
+//         console.error('Send message error:', error.message);
+//         socket.emit('errorMessage', 'Something went wrong while sending the message.');
+//       }
+//     });
+    
+//     socket.on('disconnect', () => {
+//       console.log('User disconnected:', socket.id);
+//     });
+//   });
+// };
+
+// module.exports = socketHandler;
