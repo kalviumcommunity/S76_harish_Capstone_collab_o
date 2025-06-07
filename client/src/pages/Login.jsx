@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { FcGoogle } from 'react-icons/fc'
 import { FiUser, FiLock } from 'react-icons/fi'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useNavigate } from 'react-router-dom'
+import { AuthContext } from '../AuthContext' // Make sure path is correct
 
 const Login = () => {
   const navigate = useNavigate()
+  const { setIsAuthenticated, setUserProfile } = useContext(AuthContext)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -33,10 +35,27 @@ const Login = () => {
         const data = await response.json()
         console.log('Login Success:', data)
 
-        // Save the token and userId in localStorage
+        // Extract username from the response data
+        // Adjust these fields based on your API response structure
+        const username = data.username || data.name || formData.email.split('@')[0]
+        const email = data.email || formData.email
+
+        // Save all user data in localStorage
         localStorage.setItem('token', data.token)
-        localStorage.setItem('userId', data.userId) // Store userId
+        localStorage.setItem('userId', data.userId)
+        localStorage.setItem('username', username) // Store username
+        localStorage.setItem('email', email) // Store email
+
         console.log('Stored User ID:', data.userId)
+        console.log('Stored Username:', username)
+
+        // Update Auth Context
+        setIsAuthenticated(true)
+        setUserProfile({
+          name: username,
+          email: email,
+          id: data.userId
+        })
 
         // Show success toast
         toast.success('Login successful! Redirecting...')
@@ -44,7 +63,7 @@ const Login = () => {
         // Redirect to another page (e.g., dashboard)
         setTimeout(() => {
           navigate('/')
-        }, 3000)
+        }, 2000)
       } else {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Login failed')
@@ -54,6 +73,10 @@ const Login = () => {
       setError(error.message) // Display error message
       toast.error(error.message) // Show error notification
     }
+  }
+
+  const handleRegisterClick = () => {
+    navigate('/signup')
   }
 
   return (
@@ -123,13 +146,19 @@ const Login = () => {
 
             {/* Forgot Password */}
             <div className="w-[450px] text-right mb-6">
-              <button className="text-[#AB00EA] hover:text-[#d6a3e9] text-sm font-medium transition-colors">
+              <button 
+                type="button"
+                className="text-[#AB00EA] hover:text-[#d6a3e9] text-sm font-medium transition-colors"
+              >
                 Forgot Password?
               </button>
             </div>
 
             {/* Login Button */}
-            <button className='w-full h-[60px] bg-[#AB00EA] text-white text-[18px] font-semibold rounded-lg hover:bg-[#b670cf] transition-all shadow-lg hover:shadow-xl active:transform active:scale-[0.99]'>
+            <button 
+              type="submit" 
+              className='w-full h-[60px] bg-[#AB00EA] text-white text-[18px] font-semibold rounded-lg hover:bg-[#b670cf] transition-all shadow-lg hover:shadow-xl active:transform active:scale-[0.99]'
+            >
               Login
             </button>
           </form>
@@ -137,7 +166,10 @@ const Login = () => {
           {/* Register Link */}
           <p className="text-center text-gray-400 mt-4">
             Don't have an account?{' '}
-            <button className="text-[#AB00EA] hover:text-[#d6a3e9] font-medium transition-colors">
+            <button 
+              onClick={handleRegisterClick}
+              className="text-[#AB00EA] hover:text-[#d6a3e9] font-medium transition-colors"
+            >
               Register here
             </button>
           </p>

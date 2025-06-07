@@ -1,47 +1,61 @@
 import React from 'react'
 import { FaBookOpen, FaBriefcase, FaQuestionCircle, FaUsers } from 'react-icons/fa';
+
 const FourBox = () => {
+  const boxData = [
+    {
+      icon: <FaBookOpen size={28} />,
+      title: "Learning",
+      isPrimary: true
+    },
+    {
+      icon: <FaBriefcase size={28} />,
+      title: "Freelance",
+      isPrimary: true
+    },
+    {
+      icon: <FaQuestionCircle size={28} />,
+      title: "Take Assessment",
+      isPrimary: false
+    },
+    {
+      icon: <FaUsers size={28} />,
+      title: "Hire From Us",
+      isPrimary: false
+    }
+  ];
+
   return (
-    <div className='flex justify-center'>
-      <div className='grid grid-cols-2 gap-6 mt-[150px]'>
-        {/*  first box */}
-        <div className='h-[120px] w-[370px] rounded-[12px] border-2 border-b-purple-700 bg-[#8d44e0] shadow-lg hover:scale-105 transform transition-all flex  items-center justify-center gap-4  '>
-        
-            <FaBookOpen size={40} className="text-black" />
+    <div className="container mx-auto px-6 mt-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {boxData.map((box, index) => (
+          <div 
+            key={index}
+            className={`
+              rounded-xl p-8 shadow-lg transform transition-all duration-300 hover:scale-105 
+              flex flex-col items-center justify-center text-center
+              ${box.isPrimary 
+                ? 'bg-white border border-[#FC427B] text-gray-900' 
+                : 'bg-gradient-to-br from-[#FC427B] to-[#fd6392] text-white'}
+            `}
+          >
+            <div className={`
+              h-16 w-16 rounded-full flex items-center justify-center mb-4
+              ${box.isPrimary 
+                ? 'bg-[#fff5f8] text-[#FC427B]' 
+                : 'bg-white/20 text-white'}
+            `}>
+              {box.icon}
+            </div>
             
-             <h1 className='text-black  text-[22px] font-semibold' > Learning</h1>
-          
-        </div>
-            {/*  second box */}
-
-            <div className='h-[120px] w-[370px] rounded-[12px] border-2 border-b-purple-700 bg-[#8d44e0] shadow-lg hover:scale-105 transform transition-all flex  items-center justify-center gap-4  '>
-        
-                   <FaBriefcase size={40} className="text-black" />
-        
-                    <h1 className='text-black  text-[22px] font-semibold' > Freelance</h1>
-      
-           </div>
-        
-        {/*  third box */}
-
-                <div className='h-[120px] w-[370px] rounded-[12px] border-2 border-b-purple-700 bg-gray-800 shadow-lg hover:scale-105 transform transition-all flex  items-center justify-center gap-4  '>
-                
-                     <FaQuestionCircle size={40} className="text-white" />
-
-                        <h1 className='text-white  text-[22px] font-semibold' > Take Assessment</h1>
-
-                   </div>
-       
-        {/*  fourth box */}
-        
-                 <div className='h-[120px] w-[370px] rounded-[12px] border-2 border-b-purple-700 bg-gray-800 shadow-lg hover:scale-105 transform transition-all flex  items-center justify-center gap-4  '>
-                
-                     <FaUsers size={40} className="text-white" />
-
-                        <h1 className='text-white  text-[22px] font-semibold' > hire from us</h1>
-
-                   </div>
-       
+            <h2 className={`
+              text-xl font-bold tracking-wide
+              ${box.isPrimary ? 'text-gray-900' : 'text-white'}
+            `}>
+              {box.title}
+            </h2>
+          </div>
+        ))}
       </div>
     </div>
   )

@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { FiClock, FiUsers, FiDollarSign, FiBookmark, FiCheckCircle, FiAward, FiTag, FiCalendar } from 'react-icons/fi';
+import { FiClock, FiUsers, FiDollarSign, FiBookmark, FiCheckCircle, FiArrowRight, FiTag, FiCalendar } from 'react-icons/fi';
 import { motion } from 'framer-motion'; 
-import io from 'socket.io-client';
-
-// Create a socket connection
-const socket = io('http://localhost:5000');
 
 const ProjectCard = ({ project }) => {
-  const freelancerId = localStorage.getItem('userId'); // get user ID from localStorage
+  const freelancerId = localStorage.getItem('userId');
 
   const {
     title = '',
@@ -21,8 +17,9 @@ const ProjectCard = ({ project }) => {
     proposals = 0
   } = project;
 
-  const [message, setMessage] = useState(''); // Freelancer's message for the proposal
-  const [isApplied, setIsApplied] = useState(false); // Track if freelancer has applied
+  const [message, setMessage] = useState('');
+  const [isApplied, setIsApplied] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Format deadline
   let durationText = '';
@@ -35,12 +32,10 @@ const ProjectCard = ({ project }) => {
 
   const isCompleted = status === 'completed';
 
-  // Handle form field changes
   const handleMessageChange = (e) => setMessage(e.target.value);
 
-  // Handle "Apply Now" button click
   const handleApplyNow = async () => {
-    if (isCompleted || isApplied) return; // Prevent applying if the project is completed or already applied
+    if (isCompleted || isApplied) return;
 
     if (!message) {
       alert('Please write a message before applying!');
@@ -48,13 +43,12 @@ const ProjectCard = ({ project }) => {
     }
 
     const proposalData = {
-      freelancerId, // Freelancer's user ID
-      projectId: _id, // Project ID
-      message: message, // Custom message
+      freelancerId,
+      projectId: _id,
+      message: message,
     };
 
     try {
-      // Send POST request to create the proposal
       const response = await fetch('http://localhost:5000/api/proposals', {
         method: 'POST',
         headers: {
@@ -63,18 +57,9 @@ const ProjectCard = ({ project }) => {
         body: JSON.stringify(proposalData),
       });
 
-      const data = await response.json();
-      
       if (response.ok) {
-        setIsApplied(true); // Mark as applied
-        alert(`Your proposal message: "${message}"`); // Show proposal message in alert
-
-        // Emit a WebSocket event to notify the client of the new proposal submission
-        socket.emit('proposalSubmitted', {
-          freelancerId,
-          projectId: _id,
-          proposalId: data._id,
-        });
+        setIsApplied(true);
+        alert(`Your proposal message: "${message}"`);
       } else {
         alert('Failed to submit the proposal!');
       }
@@ -84,77 +69,105 @@ const ProjectCard = ({ project }) => {
     }
   };
 
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <motion.div 
-      className="relative w-full"
+      className="w-full"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Main Card */}
-      <div className="bg-gradient-to-br from-[#2D2D2D] to-[#252525] rounded-lg overflow-hidden border-2 border-[#3a3a3a] hover:border-[#AB00EA] transition-all shadow-lg group">
-        {/* Status Bar */}
-        <div className={`h-1 w-full ${isCompleted ? 'bg-green-500' : 'bg-[#AB00EA]'}`}></div>
-        
-        <div className="p-5">
+      <div className={`bg-white rounded-lg overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all ${isCompleted ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-[#FC427B]'}`}>
+        <div className="p-6">
           {/* Header with Title and Status */}
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-white font-bold text-xl tracking-tight group-hover:text-[#AB00EA] transition-colors">
-              {title}
-            </h3>
-            <div className="flex items-center gap-2">
-              <button className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-[#3a3a3a] hover:border-[#AB00EA] text-gray-400 hover:text-[#AB00EA] transition-all group bg-[#1A1A1A]">
-                <FiBookmark size={18} className="group-hover:scale-110 transition-transform" />
-              </button>
-              <span className={`
-                ${isCompleted ? 'bg-green-900 text-green-300' : 'bg-[#3D2463] text-[#D4A6FF]'} 
-                text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1
-              `}>
-                {isCompleted ? <FiCheckCircle size={12} /> : <FiClock size={12} />}
-                {isCompleted ? 'Completed' : 'Active'}
-              </span>
-            </div>
-          </div>
-          
-          {/* Main Content Area */}
-          <div className="flex flex-col md:flex-row gap-4 mb-5">
-            {/* Left Column - Price and Category */}
-            <div className="md:w-1/4 flex flex-col gap-2">
-              <div className="bg-[#1A1A1A] rounded-lg p-3 flex flex-col items-center justify-center border border-[#333333]">
-                <FiDollarSign size={18} className="text-[#AB00EA] mb-1" />
-                <span className="text-white font-medium text-lg">${price}</span>
-                <span className="text-xs text-gray-400">Budget</span>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`
+                  text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1
+                  ${isCompleted ? 'bg-green-50 text-green-600' : 'bg-[#fff5f8] text-[#FC427B]'}
+                `}>
+                  {isCompleted ? <FiCheckCircle size={12} /> : <FiClock size={12} />}
+                  {isCompleted ? 'Completed' : 'Active'}
+                </span>
+                <span className="text-xs text-gray-500 flex items-center">
+                  <FiCalendar size={12} className="mr-1" />
+                  {durationText}
+                </span>
               </div>
               
-              <div className="bg-[#1A1A1A] rounded-lg p-3 flex flex-col items-center justify-center border border-[#333333]">
-                <FiTag size={18} className="text-[#AB00EA] mb-1" />
-                <span className="text-white font-medium">{category}</span>
-                <span className="text-xs text-gray-400">Category</span>
-              </div>
+              <h3 className="text-gray-900 font-bold text-xl">
+                {title}
+              </h3>
             </div>
-
-            {/* Center Column - Description */}
-            <div className="md:w-2/4 flex flex-col">
-              <div className="bg-[#1A1A1A] rounded-lg p-4 border border-[#333333] h-full flex flex-col">
-                <h4 className="text-[#AB00EA] text-sm font-medium mb-2">Project Description</h4>
-                <p className="text-gray-300 text-sm flex-grow">{description}</p>
-
-                {/* Deadline */}
-                <div className="mt-3 pt-3 border-t border-[#333333] flex items-center justify-center">
-                  <FiCalendar size={14} className="text-[#AB00EA] mr-2" />
-                  <span className={`text-gray-300 text-sm ${isExpired ? 'text-red-400' : ''}`}>{durationText}</span>
+            
+            <button className="p-2 rounded-full text-gray-400 hover:text-[#FC427B] hover:bg-[#fff5f8] transition-all">
+              <FiBookmark size={18} />
+            </button>
+          </div>
+          
+          {/* Content Area */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-5">
+            {/* Left Column - Price & Category */}
+            <div className="md:col-span-3 flex flex-col gap-4">
+              <div className="flex items-center">
+                <div className="h-10 w-10 rounded-full bg-[#fff5f8] flex items-center justify-center mr-3">
+                  <FiDollarSign className="text-[#FC427B]" size={18} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Budget</p>
+                  <p className="text-lg font-semibold text-gray-900">${price}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center">
+                <div className="h-10 w-10 rounded-full bg-[#fff5f8] flex items-center justify-center mr-3">
+                  <FiTag className="text-[#FC427B]" size={18} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Category</p>
+                  <p className="text-gray-900 font-medium">{category}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center">
+                <div className="h-10 w-10 rounded-full bg-[#fff5f8] flex items-center justify-center mr-3">
+                  <FiUsers className="text-[#FC427B]" size={18} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Proposals</p>
+                  <p className="text-gray-900 font-medium">{proposals}</p>
                 </div>
               </div>
             </div>
-
+            
+            {/* Center Column - Description */}
+            <div className="md:col-span-5">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Project Description</h4>
+              <p className={`text-gray-600 text-sm ${!isExpanded && 'line-clamp-4'}`}>
+                {description}
+              </p>
+              {description.length > 150 && (
+                <button 
+                  onClick={toggleExpand} 
+                  className="text-[#FC427B] text-sm font-medium mt-2 flex items-center hover:underline"
+                >
+                  {isExpanded ? 'Show less' : 'Read more'}
+                </button>
+              )}
+            </div>
+            
             {/* Right Column - Skills */}
-            <div className="md:w-1/4 bg-[#1A1A1A] rounded-lg p-3 border border-[#333333]">
-              <h4 className="text-[#AB00EA] text-sm font-medium mb-2">Required Skills</h4>
+            <div className="md:col-span-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Required Skills</h4>
               <div className="flex flex-wrap gap-2">
                 {requiredSkills.map((skill, index) => (
                   <span
                     key={index}
-                    className="bg-[#252525] text-gray-300 text-xs px-2 py-1 rounded-full border border-[#3D2463] hover:border-[#AB00EA] hover:text-[#D4A6FF] transition-colors"
+                    className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full hover:bg-[#fff5f8] hover:text-[#FC427B] transition-colors"
                   >
                     {skill}
                   </span>
@@ -162,40 +175,48 @@ const ProjectCard = ({ project }) => {
               </div>
             </div>
           </div>
-
-          {/* Footer Info and Apply Button */}
-          <div className="flex flex-wrap justify-between items-center gap-3 mt-2">
-            <div className="flex gap-4">
-              <div className="flex items-center gap-1 text-gray-300">
-                <FiUsers size={16} className="text-[#AB00EA]" />
-                <span className="text-sm">{proposals} proposals</span>
+          
+          {/* Apply Form */}
+          {!isCompleted && (
+            <div className={`mt-6 pt-6 border-t border-gray-100 ${isApplied ? 'opacity-70' : ''}`}>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                <div className="md:col-span-9">
+                  <label htmlFor="proposalMessage" className="block text-sm font-medium text-gray-700 mb-1">
+                    Your proposal message
+                  </label>
+                  <textarea 
+                    id="proposalMessage"
+                    className="w-full p-3 bg-white rounded-lg border border-gray-200 focus:ring-[#FC427B] focus:border-[#FC427B] transition-colors"
+                    placeholder="Describe why you're a good fit for this project..."
+                    value={message}
+                    onChange={handleMessageChange}
+                    rows={3}
+                    disabled={isApplied}
+                  />
+                </div>
+                <div className="md:col-span-3 flex justify-end">
+                  <button
+                    disabled={isCompleted || isApplied}
+                    onClick={handleApplyNow}
+                    className={`px-5 py-3 rounded-lg font-medium transition-all flex items-center gap-2
+                      ${isCompleted || isApplied
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                        : 'bg-[#FC427B] text-white hover:bg-[#e03a6d] shadow-sm hover:shadow-md'}`}
+                  >
+                    {isCompleted ? 'Closed' : isApplied ? 'Applied' : 'Submit Proposal'}
+                    {!isCompleted && !isApplied && <FiArrowRight size={16} />}
+                  </button>
+                </div>
               </div>
+              
+              {isApplied && (
+                <p className="mt-3 text-green-600 text-sm flex items-center">
+                  <FiCheckCircle className="mr-2" />
+                  Your proposal has been successfully submitted!
+                </p>
+              )}
             </div>
-
-            {/* Form for Message */}
-            <div className="flex flex-col gap-3 mt-3">
-              <textarea 
-                className="p-2 bg-[#252525] text-white rounded-md border border-[#333333]"
-                placeholder="Write your proposal message"
-                value={message}
-                onChange={handleMessageChange}
-              />
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button
-                disabled={isCompleted || isApplied}
-                onClick={handleApplyNow}
-                className={`px-6 py-2 rounded-lg text-white font-medium transition-all flex items-center gap-2
-                  ${isCompleted || isApplied
-                    ? 'bg-gray-600 cursor-not-allowed' 
-                    : 'bg-[#3D2463] hover:bg-[#9500ca] shadow-md hover:shadow-[#AB00EA]/20 hover:shadow-lg'}`}
-              >
-                {isCompleted ? 'Closed' : isApplied ? 'Applied' : 'Apply Now'}
-                {!isCompleted && <FiAward size={16} />}
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </motion.div>
