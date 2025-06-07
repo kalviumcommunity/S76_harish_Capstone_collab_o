@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import ProjectCard from '../components/ProjectCard';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiFilter } from 'react-icons/fi';
 
 const categories = [
   { name: 'All Projects', count: 0 },
@@ -19,12 +19,13 @@ const Freelance = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryCounts, setCategoryCounts] = useState(categories);
   const [loading, setLoading] = useState(false);
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token'); // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
         if (!token) {
           console.error('No token found. Please log in.');
           throw new Error('Unauthorized: No token provided.');
@@ -33,7 +34,7 @@ const Freelance = () => {
         const res = await fetch('http://localhost:5000/projects/', {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${token}`, // Add the token here
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
@@ -59,7 +60,7 @@ const Freelance = () => {
         );
       } catch (err) {
         console.error('Error fetching projects:', err.message);
-        setProjects([]); // Clear projects if the fetch fails
+        setProjects([]);
       } finally {
         setLoading(false);
       }
@@ -82,92 +83,134 @@ const Freelance = () => {
   });
 
   return (
-    <>
+    <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="min-h-screen bg-[#121112]">
-        {/* Hero Section */}
-        <div className="w-full px-8 py-12 bg-[#2c1c45]">
-          <div className="w-[1000px] mx-auto">
-            <h1 className="text-4xl font-bold text-white mb-4">Find Your Next Project</h1>
+      
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-white to-[#fff5f8] overflow-hidden py-16">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-[#FC427B] opacity-10 rounded-bl-[100px]"></div>
+        <div className="absolute bottom-0 left-0 w-1/4 h-1/2 bg-[#FC427B] opacity-5 rounded-tr-[100px]"></div>
+        
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Discover <span className="text-[#FC427B]">Premium</span> Projects
+            </h1>
             <p className="text-gray-600 text-lg mb-8">
-              {projects.length.toLocaleString()} available projects for talented freelancers
+              {projects.length > 0 ? projects.length.toLocaleString() : 'Exclusive'} opportunities for talented freelancers to showcase their expertise
             </p>
 
             {/* Search Bar */}
-            <div className="flex gap-4 mb-8">
-              <div className="flex-1 relative">
-                <FiSearch
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700"
-                  size={20}
-                />
-                <input
-                  type="text"
-                  placeholder="Search projects by skill or keyword"
-                  className="w-full h-14 pl-12 pr-4 rounded-xl border-2 border-white/20 bg-white/10 placeholder-white/60 outline-none focus:border-white/40 transition-all text-lg"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            <div className="relative max-w-2xl mx-auto">
+              <FiSearch
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Search projects by skill or keyword"
+                className="w-full h-14 pl-12 pr-4 rounded-lg border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FC427B] focus:border-transparent transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-6 py-12">
+        {/* Mobile Filter Toggle */}
+        <div className="md:hidden mb-6">
+          <button 
+            onClick={() => setShowMobileFilter(!showMobileFilter)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm"
+          >
+            <span className="font-medium text-gray-700">
+              Filter: <span className="text-[#FC427B]">{selectedCategory}</span>
+            </span>
+            <FiFilter size={18} className="text-gray-500" />
+          </button>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Categories - Desktop */}
+          <div className={`md:w-64 md:block ${showMobileFilter ? 'block' : 'hidden'}`}>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden sticky top-20">
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="font-bold text-gray-900">Categories</h3>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {categoryCounts.map((category, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedCategory(category.name);
+                      setShowMobileFilter(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 flex items-center justify-between transition-colors ${
+                      selectedCategory === category.name
+                        ? 'bg-[#fff5f8] text-[#FC427B] font-medium'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span>{category.name}</span>
+                    <span className={`text-sm px-2 py-1 rounded-full ${
+                      selectedCategory === category.name
+                        ? 'bg-[#FC427B] bg-opacity-10 text-[#FC427B]'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {category.count}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="w-[1000px] mx-auto px-8 py-8">
-          {/* Categories */}
-          <div className="flex gap-4 mb-8">
-            {categoryCounts.map((category, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedCategory(category.name)}
-                className={`px-6 py-3 rounded-xl flex items-center gap-2 transition-all ${
-                  selectedCategory === category.name
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                }`}
-              >
-                <span>{category.name}</span>
-                <span className="text-sm opacity-75">({category.count})</span>
-              </button>
-            ))}
+          {/* Projects Grid */}
+          <div className="flex-1">
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="relative w-16 h-16">
+                  <div className="absolute top-0 left-0 w-full h-full border-4 border-[#FC427B] border-opacity-20 rounded-full"></div>
+                  <div className="absolute top-0 left-0 w-full h-full border-4 border-[#FC427B] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <p className="ml-4 text-gray-600 font-medium">Loading projects...</p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-800">
+                    {filteredProjects.length} {selectedCategory} Available
+                  </h2>
+                  <div className="text-sm text-gray-500">
+                    Showing {filteredProjects.length} of {projects.length} projects
+                  </div>
+                </div>
+
+                {filteredProjects.length === 0 ? (
+                  <div className="bg-gray-50 border border-gray-100 rounded-xl p-12 text-center">
+                    <div className="inline-block p-4 bg-white rounded-full mb-4 shadow-sm">
+                      <FiSearch size={32} className="text-gray-300" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">No projects found</h3>
+                    <p className="text-gray-600">
+                      We couldn't find any projects matching your search. Try adjusting your filters.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-6">
+                    {filteredProjects.map((project) => (
+                      <ProjectCard key={project._id} project={project} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
-
-          {loading ? (
-            <div className="text-center text-lg text-gray-700 py-20">
-              <svg
-                className="mx-auto mb-4 animate-spin h-10 w-10 text-[#8d4fff]"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8z"
-                ></path>
-              </svg>
-              Loading projects...
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {filteredProjects.length === 0 && (
-                <div className="text-center text-gray-500 py-12">No projects found.</div>
-              )}
-              {filteredProjects.map((project) => (
-                <ProjectCard key={project._id} project={project} />
-              ))}
-            </div>
-          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

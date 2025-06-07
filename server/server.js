@@ -8,7 +8,7 @@ const courseAIRoutes = require('./routes/courseRoutes');
 const projectRoutes = require('./routes/routes');
 const authRoutes = require('./routes/routes');
 const proposalRoutes = require('./routes/ProposalRoutes');
-const messagingRoutes = require('./controller/messaging');
+// const messagingRoutes = require('./controller/messaging');
 
 const app = express();
 
@@ -29,7 +29,7 @@ app.use('/projects', projectRoutes);
 app.use('/auth', authRoutes);
 app.use('/api/ai-course', courseAIRoutes);
 app.use('/api/proposals', proposalRoutes);
-app.use('/api/messaging', messagingRoutes);
+// app.use('/api/messaging', messagingRoutes);
 
 // Start the server
 app.listen(PORT, () => {

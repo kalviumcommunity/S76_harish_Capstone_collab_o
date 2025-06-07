@@ -6,19 +6,21 @@ import Signup from './pages/Signup';
 import Freelance from './pages/Freelance';
 import Modules from './pages/Modules';
 import LearningUnit from './pages/LearningUint';
-import Quiz from './pages/Quiz';
+// import Quiz from './pages/Quiz';
 import ClientForm from './pages/ClientFrom';
 import CourseCreation from './pages/CourseCreation';
 
 import Profile from './pages/Profile';
 
-import { AuthProvider } from './AuthProvider';
+import { AuthProvider } from './AuthContext';
 
 import ClientDashboard from './pages/ClientDash/ClientDashboard';
 
 import ProposalsPage from './pages/ClientDash/ProposalPage';
-import MessagingPage from './pages/MessagingPage';    
+// import MessagingPage from './pages/MessagingPage';  
+// import Message from  './pages/freelancerDashboard/Message'
 
+import FreelancerDash from './pages/freelancerDashboard/FreelancerDashboard';
 function App() {
  
 
@@ -33,14 +35,16 @@ function App() {
             <Route path="/freelance" element={<Freelance/>} />
             <Route path="/modules" element={<Modules/>} />
             <Route path="/learning" element={<LearningUnit/>} />
-            <Route path="/quiz" element={<Quiz/>} />
+            {/* <Route path="/quiz" element={<Quiz/>} /> */}
             <Route path="/clientForm" element={<ClientForm/>} />
             <Route path="/clientForm/:id" element={<ClientForm/>} />
             <Route path="/clientDashBoard" element={<ClientDashboard/>} />
             <Route path="/courseCreation" element={<CourseCreation/>} />
             <Route path="/profile" element={<Profile/>} />
             <Route path="/projects/:projectId/" element={<ProposalsPage />} />
-            <Route path="/messages/:conversationId" element={<MessagingPage />} />
+            <Route path="/freelancerDashboard" element={<FreelancerDash />} />
+             {/* <Route path="/messages" element={<Message />} /> */}
+            
           </Routes>
 
         </Router>

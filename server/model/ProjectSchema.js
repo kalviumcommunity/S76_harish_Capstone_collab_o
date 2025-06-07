@@ -8,7 +8,7 @@ const ProjectSchema = new mongoose.Schema({
     image: { type: String, required: true },
     requiredSkills: { type: [String], required: true },
     deadline: { type: Date, required: true },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the User model
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
     status: { type: String, enum: ['active', 'completed'], default: 'active' },
     proposals: { type: Number, default: 0 },
 }, { timestamps: true });
