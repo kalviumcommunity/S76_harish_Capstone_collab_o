@@ -26,7 +26,7 @@ const CourseCreation = () => {
         setRecentPrompts((prev) => [aiPrompt, ...prev.slice(0, 4)]);
       }
 
-      const response = await axios.post('http://localhost:5000/api/ai-course/generate', {
+      const response = await axios.post('https://s76-harish-capstone-collab-o.onrender.com/api/ai-course/generate', {
         prompt: aiPrompt
       });
 

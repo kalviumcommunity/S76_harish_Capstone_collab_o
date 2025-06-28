@@ -37,7 +37,7 @@ const ProposalsPage = () => {
   const fetchProposals = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/proposals/${projectId}`, {
+      const res = await fetch(`https://s76-harish-capstone-collab-o.onrender.com/api/proposals/${projectId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -57,7 +57,7 @@ const ProposalsPage = () => {
   const handleAccept = async (proposalId, freelancerId) => {
     try {
       // Accept the proposal
-      const res = await fetch(`http://localhost:5000/api/proposals/${proposalId}/accept`, {
+      const res = await fetch(`https://s76-harish-capstone-collab-o.onrender.com/api/proposals/${proposalId}/accept`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

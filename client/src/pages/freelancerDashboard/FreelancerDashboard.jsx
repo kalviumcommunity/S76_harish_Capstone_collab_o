@@ -43,7 +43,7 @@ const FreelancerDashboard = () => {
   const fetchUserProposals = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:5000/api/proposals/freelancer/${userId}`, {
+      const response = await axios.get(`https://s76-harish-capstone-collab-o.onrender.com/api/proposals/freelancer/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
