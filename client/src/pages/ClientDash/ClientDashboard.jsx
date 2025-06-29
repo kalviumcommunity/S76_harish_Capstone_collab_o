@@ -38,7 +38,7 @@ const ClientDashboard = () => {
   const fetchUserProjects = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/projects/user/${userId}`, {
+      const res = await fetch(`https://s76-harish-capstone-collab-o.onrender.com/projects/user/${userId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,

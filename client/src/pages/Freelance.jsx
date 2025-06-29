@@ -31,7 +31,7 @@ const Freelance = () => {
           throw new Error('Unauthorized: No token provided.');
         }
 
-        const res = await fetch('http://localhost:5000/projects/', {
+        const res = await fetch('https://s76-harish-capstone-collab-o.onrender.com/projects', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,

@@ -36,7 +36,7 @@ const ClientForm = () => {
             return;
           }
 
-          const response = await fetch(`http://localhost:5000/projects/${id}`, {
+          const response = await fetch(`https://s76-harish-capstone-collab-o.onrender.com/projects/${id}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -90,8 +90,8 @@ const ClientForm = () => {
 
     try {
       const url = isEditMode
-        ? `http://localhost:5000/projects/update/${id}`
-        : 'http://localhost:5000/projects/create';
+        ? `https://s76-harish-capstone-collab-o.onrender.com/projects/update/${id}`
+        : 'https://s76-harish-capstone-collab-o.onrender.com/projects/create';
 
       const method = isEditMode ? 'PUT' : 'POST';
 
