@@ -16,8 +16,8 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Adjust the origin to match your frontend URL
-  credentials: true,
+  origin: ['http://localhost:5173', 'https://freecoll.netlify.app'],
+  credentials: true
 }));
 app.use(express.json());
 
