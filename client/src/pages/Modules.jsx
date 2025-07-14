@@ -25,7 +25,7 @@ export default function QuizApp() {
     setAnswers({});
     setCurrent(0);
     try {
-      const res = await axios.post("http://localhost:5000/api/ai-quiz/generate", {
+      const res = await axios.post("https://s76-harish-capstone-collab-o.onrender.com/api/ai-quiz/generate", {
         topic,
         numQuestions,
         difficulty,
