@@ -10,6 +10,8 @@ const authRoutes = require('./routes/routes');
 const proposalRoutes = require('./routes/ProposalRoutes');
 // const messagingRoutes = require('./controller/messaging');
 
+const quizAIRoutes = require('./routes/QuizAiRoutes');
+
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -30,6 +32,11 @@ app.use('/auth', authRoutes);
 app.use('/api/ai-course', courseAIRoutes);
 app.use('/api/proposals', proposalRoutes);
 // app.use('/api/messaging', messagingRoutes);
+
+
+// api routes for quiz
+app.use('/api/ai-quiz', quizAIRoutes);
+
 
 // Start the server
 app.listen(PORT, () => {
