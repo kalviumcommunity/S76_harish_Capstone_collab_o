@@ -37,6 +37,9 @@ app.use('/api/proposals', proposalRoutes);
 // api routes for quiz
 app.use('/api/ai-quiz', quizAIRoutes);
 
+// Profile routes
+app.use('/api/profile', require('./routes/Profile'));
+
 
 // Start the server
 app.listen(PORT, () => {

@@ -91,7 +91,7 @@ export default function QuizApp() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center items-center mb-4">
-            <AcademicCapIcon className="h-12 w-12 text-blue-600 mr-3" />
+            <AcademicCapIcon className="h-12 w-12 text-[#FC427B] mr-3" />
             <h1 className="text-4xl font-bold text-gray-900">AI Quiz Platform</h1>
           </div>
           <p className="text-lg text-gray-600">Test your knowledge with AI-generated quizzes</p>
@@ -101,7 +101,7 @@ export default function QuizApp() {
         {step === "setup" && (
           <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
             <div className="flex items-center mb-6">
-              <BookOpenIcon className="h-8 w-8 text-blue-600 mr-3" />
+              <BookOpenIcon className="h-8 w-8 text-[#FC427B] mr-3" />
               <h2 className="text-2xl font-semibold text-gray-900">Create Your Quiz</h2>
             </div>
             
@@ -117,7 +117,7 @@ export default function QuizApp() {
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FC427B] focus:border-[#FC427B] transition-colors"
                 />
               </div>
 
@@ -133,7 +133,7 @@ export default function QuizApp() {
                   value={numQuestions}
                   onChange={(e) => setNumQuestions(Number(e.target.value))}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FC427B] focus:border-[#FC427B] transition-colors"
                 />
               </div>
 
@@ -145,7 +145,7 @@ export default function QuizApp() {
                   id="difficulty"
                   value={difficulty}
                   onChange={(e) => setDifficulty(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FC427B] focus:border-[#FC427B] transition-colors"
                 >
                   {difficulties.map((d) => (
                     <option key={d} value={d}>
@@ -158,7 +158,7 @@ export default function QuizApp() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                className="w-full bg-[#FC427B]hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
               >
                 {loading ? (
                   <>
@@ -198,7 +198,7 @@ export default function QuizApp() {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-[#FC427B]h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((current + 1) / questions.length) * 100}%` }}
                 ></div>
               </div>
@@ -235,7 +235,7 @@ export default function QuizApp() {
                       value={opt}
                       checked={answers[current] === opt}
                       onChange={() => handleAnswer(opt)}
-                      className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      className="h-4 w-4 text-[#FC427B]border-gray-300 focus:ring-blue-500"
                     />
                     <span className="ml-3 text-gray-900">{opt}</span>
                   </label>
@@ -255,7 +255,7 @@ export default function QuizApp() {
               <button
                 onClick={handleNext}
                 disabled={!answers[current]}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+                className="px-6 py-2 bg-[#FC427B]hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
               >
                 {current === questions.length - 1 ? "Finish Quiz" : "Next"}
               </button>
@@ -324,7 +324,7 @@ export default function QuizApp() {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={handleRestart}
-                className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                className="px-8 py-3 bg-[#FC427B]hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
               >
                 Take Another Quiz
               </button>
