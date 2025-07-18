@@ -1,10 +1,9 @@
 import React, { useState, useContext } from 'react'
-import { FcGoogle } from 'react-icons/fc'
-import { FiUser, FiLock } from 'react-icons/fi'
+import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useNavigate } from 'react-router-dom'
-import { AuthContext } from '../AuthContext' // Make sure path is correct
+import { AuthContext } from '../AuthContext'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -13,7 +12,8 @@ const Login = () => {
     email: '',
     password: '',
   })
-  const [error, setError] = useState(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -22,6 +22,8 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault()
+    setIsLoading(true)
+    
     try {
       const response = await fetch('https://s76-harish-capstone-collab-o.onrender.com/auth/login', {
         method: 'POST',
@@ -36,18 +38,14 @@ const Login = () => {
         console.log('Login Success:', data)
 
         // Extract username from the response data
-        // Adjust these fields based on your API response structure
         const username = data.username || data.name || formData.email.split('@')[0]
         const email = data.email || formData.email
 
         // Save all user data in localStorage
         localStorage.setItem('token', data.token)
         localStorage.setItem('userId', data.userId)
-        localStorage.setItem('username', username) // Store username
-        localStorage.setItem('email', email) // Store email
-
-        console.log('Stored User ID:', data.userId)
-        console.log('Stored Username:', username)
+        localStorage.setItem('username', username)
+        localStorage.setItem('email', email)
 
         // Update Auth Context
         setIsAuthenticated(true)
@@ -57,21 +55,20 @@ const Login = () => {
           id: data.userId
         })
 
-        // Show success toast
-        toast.success('Login successful! Redirecting...')
+        toast.success('Login successful! Welcome back!')
         
-        // Redirect to another page (e.g., dashboard)
         setTimeout(() => {
           navigate('/')
-        }, 2000)
+        }, 1500)
       } else {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Login failed')
+        throw new Error(errorData.error || 'Invalid credentials')
       }
     } catch (error) {
       console.error(error)
-      setError(error.message) // Display error message
-      toast.error(error.message) // Show error notification
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -80,99 +77,135 @@ const Login = () => {
   }
 
   return (
-    <div className="bg-black min-h-screen flex flex-col">
-      {/* Toast Container */}
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <ToastContainer position="top-right" autoClose={3000} />
       
-      <div className="h-[2px] w-full bg-gradient-to-r from-[#AB00EA] via-white to-[#AB00EA]" />
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900">
+            Sign in to your account
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Welcome back! Please enter your details.
+          </p>
+        </div>
+      </div>
 
-      <div className="flex-grow flex justify-center items-center py-8">
-        <div className="h-auto w-[700px] bg-[#292727] rounded-2xl flex flex-col items-center text-white p-8 shadow-2xl">
-          {/* Logo or Brand Section */}
-          <div className="text-center mb-8">
-            <h1 className='text-[32px] font-bold bg-gradient-to-r from-[#AB00EA] via-white to-[#AB00EA] bg-clip-text text-transparent'>
-              Welcome Back
-            </h1>
-            <p className="text-gray-400 mt-2">Please enter your details to continue</p>
-          </div>
-
-          {/* Error Message */}
-          {error && <div className="text-red-500 mb-4">{error}</div>}
-
-          {/* Google Login Button */}
-          <button 
-            className="w-[450px] h-[60px] bg-white text-black rounded-lg flex items-center justify-center gap-3 mb-6 hover:bg-gray-100 transition-all border-2 border-[#AB00EA] shadow-[4px_4px_0px_0px_#AB00EA]"
-          >
-            <FcGoogle size={24} />
-            <span className="font-medium">Continue with Google</span>
-          </button>
-
-          {/* Divider */}
-          <div className="w-[450px] flex items-center gap-4 mb-6">
-            <div className="h-[1px] flex-grow bg-gray-600"></div>
-            <span className="text-gray-400">or</span>
-            <div className="h-[1px] flex-grow bg-gray-600"></div>
-          </div>
-
-          {/* Input Fields */}
-          <form onSubmit={handleLogin} className="space-y-4 w-[450px]">
-            {/* Email */}
-            <div className="relative">
-              <FiUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                name="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full h-[60px] pl-12 pr-4 bg-white text-black rounded-lg outline-none border-2 border-[#AB00EA] shadow-[4px_4px_0px_0px_#AB00EA] focus:border-[#d6a3e9] transition-all"
-                required
-              />
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-gray-200">
+          <form onSubmit={handleLogin} className="space-y-6">
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email address
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiMail className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#FC427B] focus:border-[#FC427B] sm:text-sm"
+                  placeholder="Enter your email"
+                />
+              </div>
             </div>
 
-            {/* Password */}
-            <div className="relative">
-              <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full h-[60px] pl-12 pr-4 bg-white text-black rounded-lg outline-none border-2 border-[#AB00EA] shadow-[4px_4px_0px_0px_#AB00EA] focus:border-[#d6a3e9] transition-all"
-                required
-              />
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiLock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#FC427B] focus:border-[#FC427B] sm:text-sm"
+                  placeholder="Enter your password"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <FiEyeOff className="h-5 w-5" />
+                    ) : (
+                      <FiEye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Forgot Password */}
-            <div className="w-[450px] text-right mb-6">
-              <button 
-                type="button"
-                className="text-[#AB00EA] hover:text-[#d6a3e9] text-sm font-medium transition-colors"
-              >
-                Forgot Password?
-              </button>
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <button
+                  type="button"
+                  className="font-medium text-[#FC427B] hover:text-[#e03a6d] transition-colors duration-200"
+                >
+                  Forgot your password?
+                </button>
+              </div>
             </div>
 
-            {/* Login Button */}
-            <button 
-              type="submit" 
-              className='w-full h-[60px] bg-[#AB00EA] text-white text-[18px] font-semibold rounded-lg hover:bg-[#b670cf] transition-all shadow-lg hover:shadow-xl active:transform active:scale-[0.99]'
-            >
-              Login
-            </button>
+            {/* Submit Button */}
+            <div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#FC427B] hover:bg-[#e03a6d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC427B] transition-colors duration-200 ${
+                  isLoading ? 'opacity-75 cursor-not-allowed' : ''
+                }`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Signing in...
+                  </div>
+                ) : (
+                  'Sign in'
+                )}
+              </button>
+            </div>
           </form>
 
           {/* Register Link */}
-          <p className="text-center text-gray-400 mt-4">
-            Don't have an account?{' '}
-            <button 
-              onClick={handleRegisterClick}
-              className="text-[#AB00EA] hover:text-[#d6a3e9] font-medium transition-colors"
-            >
-              Register here
-            </button>
-          </p>
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">New to FreelanceHub?</span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={handleRegisterClick}
+                className="w-full flex justify-center py-2 px-4 border border-[#FC427B] text-sm font-medium rounded-md text-[#FC427B] bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC427B] transition-colors duration-200"
+              >
+                Create an account
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
