@@ -1,19 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
-import { BookOpenIcon, AcademicCapIcon, ClockIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { BookOpenIcon, AcademicCapIcon, ClockIcon, CheckCircleIcon, XCircleIcon, TrophyIcon, StarIcon } from '@heroicons/react/24/outline';
+import { AuthContext } from '../AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const difficulties = ["Beginner", "Intermediate", "Advanced"];
 
-export default function QuizApp() {
+const popularSkills = [
+  "JavaScript", "React", "Node.js", "Python", "Java", "C++", "HTML/CSS", 
+  "TypeScript", "Angular", "Vue.js", "PHP", "Ruby", "Swift", "Kotlin",
+  "UI/UX Design", "Graphic Design", "Digital Marketing", "Content Writing"
+];
+
+export default function SkillAssessment() {
   const [step, setStep] = useState("setup"); // setup | quiz | result
   const [topic, setTopic] = useState("");
-  const [numQuestions, setNumQuestions] = useState(5);
+  const [numQuestions, setNumQuestions] = useState(10);
   const [difficulty, setDifficulty] = useState("Beginner");
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [assessmentSaved, setAssessmentSaved] = useState(false);
+  
+  const { isAuthenticated } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // Check if user is authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AcademicCapIcon className="h-24 w-24 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Sign In Required</h2>
+          <p className="text-gray-600 mb-6">Please sign in to take skill assessments and save your progress.</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="bg-[#FC427B] hover:bg-[#e03a6d] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Fetch quiz from backend
   const startQuiz = async (e) => {
@@ -24,8 +56,10 @@ export default function QuizApp() {
     setQuestions([]);
     setAnswers({});
     setCurrent(0);
+    setAssessmentSaved(false);
+    
     try {
-      const res = await axios.post("https://s76-harish-capstone-collab-o.onrender.com/api/ai-quiz/generate", {
+      const res = await axios.post("http://localhost:5000/api/ai-quiz/generate", {
         topic,
         numQuestions,
         difficulty,
@@ -63,11 +97,48 @@ export default function QuizApp() {
     setAnswers({});
     setCurrent(0);
     setError("");
+    setAssessmentSaved(false);
+  };
+
+  const saveAssessment = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        "http://localhost:5000/api/ai-quiz/save-assessment",
+        {
+          skill: topic,
+          score: score,
+          totalQuestions: questions.length,
+          difficulty: difficulty
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      console.log('Assessment saved:', response.data);
+      setAssessmentSaved(true);
+    } catch (error) {
+      console.error('Error saving assessment:', error);
+      setError("Failed to save assessment to profile.");
+    }
+    setSaving(false);
   };
 
   const score = Object.entries(answers).filter(
     ([idx, ans]) => questions[idx]?.answer === ans
   ).length;
+
+  const percentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+
+  const getSkillLevel = () => {
+    if (percentage >= 90) return { level: 'Expert', color: 'text-purple-600', bgColor: 'bg-purple-100' };
+    if (percentage >= 75) return { level: 'Advanced', color: 'text-blue-600', bgColor: 'bg-blue-100' };
+    if (percentage >= 60) return { level: 'Intermediate', color: 'text-green-600', bgColor: 'bg-green-100' };
+    return { level: 'Beginner', color: 'text-yellow-600', bgColor: 'bg-yellow-100' };
+  };
 
   const getDifficultyColor = (diff) => {
     switch (diff) {
@@ -78,23 +149,16 @@ export default function QuizApp() {
     }
   };
 
-  const getScoreColor = () => {
-    const percentage = (score / questions.length) * 100;
-    if (percentage >= 80) return "text-green-600";
-    if (percentage >= 60) return "text-yellow-600";
-    return "text-red-600";
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center items-center mb-4">
-            <AcademicCapIcon className="h-12 w-12 text-[#FC427B] mr-3" />
-            <h1 className="text-4xl font-bold text-gray-900">AI Quiz Platform</h1>
+            <TrophyIcon className="h-12 w-12 text-[#FC427B] mr-3" />
+            <h1 className="text-4xl font-bold text-gray-900">Skill Assessment</h1>
           </div>
-          <p className="text-lg text-gray-600">Test your knowledge with AI-generated quizzes</p>
+          <p className="text-lg text-gray-600">Test your skills and showcase your expertise on your profile</p>
         </div>
 
         {/* Setup Step */}
@@ -102,18 +166,38 @@ export default function QuizApp() {
           <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
             <div className="flex items-center mb-6">
               <BookOpenIcon className="h-8 w-8 text-[#FC427B] mr-3" />
-              <h2 className="text-2xl font-semibold text-gray-900">Create Your Quiz</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">Choose Your Skill</h2>
+            </div>
+            
+            {/* Popular Skills */}
+            <div className="mb-8">
+              <h3 className="text-lg font-medium text-gray-700 mb-4">Popular Skills</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {popularSkills.map((skill) => (
+                  <button
+                    key={skill}
+                    onClick={() => setTopic(skill)}
+                    className={`p-3 text-left rounded-lg border-2 transition-all ${
+                      topic === skill
+                        ? 'border-[#FC427B] bg-[#FC427B]/10 text-[#FC427B]'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
             </div>
             
             <form onSubmit={startQuiz} className="space-y-6">
               <div>
                 <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-2">
-                  Quiz Topic
+                  Or Enter Custom Skill
                 </label>
                 <input
                   id="topic"
                   type="text"
-                  placeholder="e.g., JavaScript, Python, React..."
+                  placeholder="e.g., Machine Learning, Blockchain, etc."
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   required
@@ -121,44 +205,47 @@ export default function QuizApp() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="numQuestions" className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of Questions
-                </label>
-                <input
-                  id="numQuestions"
-                  type="number"
-                  min={1}
-                  max={30}
-                  value={numQuestions}
-                  onChange={(e) => setNumQuestions(Number(e.target.value))}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FC427B] focus:border-[#FC427B] transition-colors"
-                />
-              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="numQuestions" className="block text-sm font-medium text-gray-700 mb-2">
+                    Number of Questions
+                  </label>
+                  <select
+                    id="numQuestions"
+                    value={numQuestions}
+                    onChange={(e) => setNumQuestions(Number(e.target.value))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FC427B] focus:border-[#FC427B] transition-colors"
+                  >
+                    <option value={5}>5 Questions</option>
+                    <option value={10}>10 Questions</option>
+                    <option value={15}>15 Questions</option>
+                    <option value={20}>20 Questions</option>
+                  </select>
+                </div>
 
-              <div>
-                <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-2">
-                  Difficulty Level
-                </label>
-                <select
-                  id="difficulty"
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FC427B] focus:border-[#FC427B] transition-colors"
-                >
-                  {difficulties.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-2">
+                    Difficulty Level
+                  </label>
+                  <select
+                    id="difficulty"
+                    value={difficulty}
+                    onChange={(e) => setDifficulty(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FC427B] focus:border-[#FC427B] transition-colors"
+                  >
+                    {difficulties.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#FC427B]hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                className="w-full bg-[#FC427B] hover:bg-[#e03a6d] disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
               >
                 {loading ? (
                   <>
@@ -166,10 +253,10 @@ export default function QuizApp() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Generating Quiz...
+                    Generating Assessment...
                   </>
                 ) : (
-                  "Start Quiz"
+                  "Start Assessment"
                 )}
               </button>
 
@@ -198,7 +285,7 @@ export default function QuizApp() {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-[#FC427B]h-2 rounded-full transition-all duration-300"
+                  className="bg-[#FC427B] h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((current + 1) / questions.length) * 100}%` }}
                 ></div>
               </div>
@@ -225,7 +312,7 @@ export default function QuizApp() {
                     key={i} 
                     className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
                       answers[current] === opt 
-                        ? 'border-blue-500 bg-blue-50' 
+                        ? 'border-[#FC427B] bg-[#FC427B]/10' 
                         : 'border-gray-200'
                     }`}
                   >
@@ -235,7 +322,7 @@ export default function QuizApp() {
                       value={opt}
                       checked={answers[current] === opt}
                       onChange={() => handleAnswer(opt)}
-                      className="h-4 w-4 text-[#FC427B]border-gray-300 focus:ring-blue-500"
+                      className="h-4 w-4 text-[#FC427B] border-gray-300 focus:ring-[#FC427B]"
                     />
                     <span className="ml-3 text-gray-900">{opt}</span>
                   </label>
@@ -255,9 +342,9 @@ export default function QuizApp() {
               <button
                 onClick={handleNext}
                 disabled={!answers[current]}
-                className="px-6 py-2 bg-[#FC427B]hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+                className="px-6 py-2 bg-[#FC427B] hover:bg-[#e03a6d] disabled:bg-gray-400 text-white rounded-lg transition-colors"
               >
-                {current === questions.length - 1 ? "Finish Quiz" : "Next"}
+                {current === questions.length - 1 ? "Finish Assessment" : "Next"}
               </button>
             </div>
           </div>
@@ -269,15 +356,59 @@ export default function QuizApp() {
             {/* Score Header */}
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
-                <div className={`text-6xl font-bold ${getScoreColor()}`}>
+                <div className={`text-6xl font-bold ${getSkillLevel().color}`}>
                   {score}/{questions.length}
                 </div>
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Quiz Complete!</h2>
-              <p className="text-lg text-gray-600">
-                You scored {Math.round((score / questions.length) * 100)}%
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Assessment Complete!</h2>
+              <p className="text-lg text-gray-600 mb-4">
+                You scored {percentage}% on {topic}
               </p>
+              
+              {/* Skill Level Badge */}
+              <div className={`inline-flex items-center px-4 py-2 rounded-full ${getSkillLevel().bgColor} ${getSkillLevel().color} font-semibold`}>
+                <StarIcon className="h-5 w-5 mr-2" />
+                {getSkillLevel().level} Level
+              </div>
             </div>
+
+            {/* Save to Profile */}
+            {!assessmentSaved && (
+              <div className="text-center mb-8">
+                <p className="text-gray-600 mb-4">Save this assessment to your profile to showcase your skills to clients!</p>
+                <button
+                  onClick={saveAssessment}
+                  disabled={saving}
+                  className="bg-[#FC427B] hover:bg-[#e03a6d] disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center mx-auto"
+                >
+                  {saving ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <TrophyIcon className="h-5 w-5 mr-2" />
+                      Save to Profile
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {assessmentSaved && (
+              <div className="text-center mb-8">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center justify-center">
+                    <CheckCircleIcon className="h-6 w-6 text-green-500 mr-2" />
+                    <span className="text-green-800 font-semibold">Assessment saved to your profile!</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Detailed Results */}
             <div className="space-y-6 mb-8">
@@ -324,9 +455,15 @@ export default function QuizApp() {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={handleRestart}
-                className="px-8 py-3 bg-[#FC427B]hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                className="px-8 py-3 bg-[#FC427B] hover:bg-[#e03a6d] text-white font-semibold rounded-lg transition-colors"
               >
-                Take Another Quiz
+                Take Another Assessment
+              </button>
+              <button
+                onClick={() => navigate('/profile')}
+                className="px-8 py-3 border border-[#FC427B] text-[#FC427B] hover:bg-[#FC427B] hover:text-white font-semibold rounded-lg transition-colors"
+              >
+                View Profile
               </button>
             </div>
           </div>
