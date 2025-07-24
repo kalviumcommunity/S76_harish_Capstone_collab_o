@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/profile/me";
+const API_URL = "https://s76-harish-capstone-collab-o.onrender.com/api/profile/me";
 const TOKEN = localStorage.getItem("token");
 
 const emptyProfile = {
@@ -401,7 +401,7 @@ const Profile = () => {
               {freelancer.skills.map((skill, i) => (
                 <span
                   key={i}
-                  className="bg-[#FC427B] bg-opacity-10 text-[#FC427B] px-3 py-1 rounded-full text-xs font-semibold"
+                  className="bg-[#FC427B] bg-opacity-10 text-white px-3 py-1 rounded-full text-xs font-semibold"
                 >
                   {skill}
                 </span>

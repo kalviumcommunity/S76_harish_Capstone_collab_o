@@ -170,9 +170,13 @@ const ProposalsPage = () => {
             
             {/* Freelancer info */}
             <div className="flex items-center mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-600 to-green-500 flex items-center justify-center">
+              <button 
+                onClick={() => navigate(`/profile/${acceptedProposal?.freelancerId?._id}`)}
+                className="w-12 h-12 rounded-full bg-gradient-to-r from-green-600 to-green-500 flex items-center justify-center hover:from-green-700 hover:to-green-600 transition-all duration-200 cursor-pointer"
+                title="View Profile"
+              >
                 <FiUser className="text-white" size={24} />
-              </div>
+              </button>
               <div className="ml-4">
                 <h4 className="text-lg font-semibold text-gray-800">
                   {acceptedProposal?.freelancerId?.name || 'Freelancer'}
@@ -275,15 +279,21 @@ const ProposalsPage = () => {
                         onClick={() => toggleProposalDetails(proposal._id)}
                       >
                         <div className="flex items-center">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center
-                            ${isAccepted 
-                              ? 'bg-gradient-to-r from-green-600 to-green-500' 
-                              : isDisabled
-                                ? 'bg-gray-300'
-                                : 'bg-gradient-to-r from-purple-600 to-indigo-600'}`}
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/profile/${proposal.freelancerId?._id}`);
+                            }}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center hover:scale-105 transition-all duration-200 cursor-pointer
+                              ${isAccepted 
+                                ? 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600' 
+                                : isDisabled
+                                  ? 'bg-gray-300 hover:bg-gray-400'
+                                  : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'}`}
+                            title="View Profile"
                           >
                             <FiUser className="text-white" />
-                          </div>
+                          </button>
                           <div className="ml-3">
                             <h3 className="text-xl font-bold text-gray-800">
                               {proposal.freelancerId?.name || 'Freelancer'}
