@@ -11,6 +11,7 @@ import ClientForm from './pages/ClientFrom';
 import CourseCreation from './pages/CourseCreation';
 
 import Profile from './pages/Profile';
+import PublicProfile from './pages/PublicProfile';
 
 import { AuthProvider } from './AuthContext';
 
@@ -41,6 +42,7 @@ function App() {
             <Route path="/clientDashBoard" element={<ClientDashboard/>} />
             <Route path="/courseCreation" element={<CourseCreation/>} />
             <Route path="/profile" element={<Profile/>} />
+            <Route path="/profile/:userId" element={<PublicProfile/>} />
             <Route path="/projects/:projectId/" element={<ProposalsPage />} />
             <Route path="/freelancerDashboard" element={<FreelancerDash />} />
              {/* <Route path="/messages" element={<Message />} /> */}

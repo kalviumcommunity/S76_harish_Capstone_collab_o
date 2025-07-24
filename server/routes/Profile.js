@@ -36,4 +36,21 @@ router.post('/me', authenticate, async (req, res) => {
   }
 });
 
+// Get profile by user ID (public route for viewing other users' profiles)
+router.get('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const profile = await Profile.findOne({ userId }).populate('userId', 'name email');
+    
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+    
+    res.json(profile);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error while fetching profile.' });
+  }
+});
+
 module.exports = router;
