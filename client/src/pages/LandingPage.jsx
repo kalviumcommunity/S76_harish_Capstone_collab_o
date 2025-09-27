@@ -1,226 +1,308 @@
-import React, { useState, useEffect, useContext } from 'react'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
-import { useNavigate } from 'react-router-dom'
-import { Search, Star, ChevronLeft, ChevronRight, Code, Smartphone, Palette, PenTool, Video, Music, FileText, TrendingUp } from 'lucide-react'
-import { AuthContext } from '../AuthContext'
+import React, { useState } from 'react';
+// import './App.css'; // You'll need to include Tailwind CSS
 
 const LandingPage = () => {
-  const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const { isAuthenticated } = useContext(AuthContext);
-
-  const handleSignup = () => {
-    navigate('/signup')
-  }
-
-  // Carousel data
-  const carouselSlides = [
-    {
-      id: 1,
-      title: "Find the perfect freelance services for your business",
-      subtitle: "Millions of people use FreelanceHub to turn their ideas into reality.",
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1171&q=80",
-      buttonText: "Get Started"
-    },
-    {
-      id: 2,
-      title: "The #1 Global Freelancing Platform",
-      subtitle: "Connect with talented freelancers and grow your business.",
-      image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80",
-      buttonText: "Hire Freelancers"
-    },
-    {
-      id: 3,
-      title: "Scale your professional workforce",
-      subtitle: "Access talent for every business need.",
-      image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-      buttonText: "Find Talent"
-    }
-  ];
-
-  // Project categories
-  const categories = [
-    { icon: Code, name: "Website Development", description: "Custom websites & web apps", color: "bg-blue-500" },
-    { icon: Smartphone, name: "Mobile App Development", description: "iOS & Android apps", color: "bg-green-500" },
-    { icon: Palette, name: "Graphic Design", description: "Logos, branding & design", color: "bg-purple-500" },
-    { icon: PenTool, name: "UI/UX Design", description: "User interface design", color: "bg-pink-500" },
-    { icon: Video, name: "Video & Animation", description: "Video editing & motion graphics", color: "bg-red-500" },
-    { icon: Music, name: "Music & Audio", description: "Voice over & sound design", color: "bg-yellow-500" },
-    { icon: FileText, name: "Content Writing", description: "Articles, blogs & copywriting", color: "bg-indigo-500" },
-    { icon: TrendingUp, name: "Digital Marketing", description: "SEO, social media & ads", color: "bg-orange-500" }
-  ];
-
-  // Auto-advance carousel
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [carouselSlides.length]);
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + carouselSlides.length) % carouselSlides.length);
-  };
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="bg-white text-gray-900 min-h-screen">
-      <Navbar />
-      
-      {/* Main Content */}
-      <div>
-        {/* Hero Carousel */}
-        <div className="relative h-[500px] overflow-hidden">
-          {carouselSlides.map((slide, index) => (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              <div className="relative h-full bg-gradient-to-r from-gray-900/70 to-gray-900/50">
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className="absolute inset-0 w-full h-full object-cover -z-10"
-                />
-                <div className="container mx-auto px-6 h-full flex items-center">
-                  <div className="max-w-2xl text-white">
-                    <h1 className="text-5xl font-bold mb-4">{slide.title}</h1>
-                    <p className="text-xl mb-8 opacity-90">{slide.subtitle}</p>
-                    {!isAuthenticated && (
-                      <button
-                        onClick={handleSignup}
-                        className="bg-[#FC427B] hover:bg-[#e03a6d] text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-200"
-                      >
-                        {slide.buttonText}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation Bar */}
+      <nav className="bg-white shadow-lg relative z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <h1 className="text-2xl font-bold text-gray-900 cursor-pointer">
+                Collab-O
+              </h1>
             </div>
-          ))}
-          
-          {/* Carousel Controls */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-200"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all duration-200"
-          >
-            <ChevronRight size={24} />
-          </button>
-          
-          {/* Carousel Indicators */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {carouselSlides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                  index === currentSlide ? 'bg-white' : 'bg-white/50'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
 
-        {/* Search Bar */}
-        <div className="container mx-auto px-6 -mt-8 relative z-10">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="What service are you looking for today?"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FC427B] focus:border-transparent outline-none"
-                />
-              </div>
-              <button className="bg-[#FC427B] hover:bg-[#e03a6d] text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-200">
-                Search
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Popular Services */}
-        <div className="container mx-auto px-6 py-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Popular Services</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
-              <div
-                key={index}
-                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
-              >
-                <div className={`inline-flex p-3 rounded-lg ${category.color} text-white mb-4 group-hover:scale-110 transition-transform duration-200`}>
-                  <category.icon size={24} />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{category.name}</h3>
-                <p className="text-gray-600 text-sm">{category.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Featured Projects */}
-        <div className="bg-gray-50 py-16">
-          <div className="container mx-auto px-6">
-            <h2 className="text-3xl font-bold text-center mb-12">Featured Projects</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <div key={item} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                  <img
-                    src={`https://images.unsplash.com/photo-${1500000000000 + item}?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80`}
-                    alt={`Project ${item}`}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-2">Modern Website Design</h3>
-                    <p className="text-gray-600 text-sm mb-4">Professional web design for your business</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Star className="text-yellow-400 fill-current" size={16} />
-                        <span className="text-sm text-gray-600 ml-1">5.0 (120)</span>
+            {/* Desktop Navigation */}
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-baseline space-x-8">
+                {/* Find Talent Dropdown */}
+                <div className="relative group">
+                  <button className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
+                    Find talent
+                    <svg className="ml-1 w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <div className="absolute left-0 mt-2 w-80 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
+                    <div className="py-6 px-6">
+                      <div className="grid grid-cols-2 gap-8">
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3">Browse Talent</h3>
+                          <ul className="space-y-2">
+                            <li><a href="#" className="text-sm text-gray-600 hover:text-green-600">Web Development</a></li>
+                            <li><a href="#" className="text-sm text-gray-600 hover:text-green-600">Mobile Development</a></li>
+                            <li><a href="#" className="text-sm text-gray-600 hover:text-green-600">Design & Creative</a></li>
+                            <li><a href="#" className="text-sm text-gray-600 hover:text-green-600">Data Science</a></li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3">Success Stories</h3>
+                          <p className="text-sm text-gray-600 mb-2">
+                            Discover how teams work strategically and grow together.
+                          </p>
+                          <a href="#" className="text-sm text-green-600 hover:text-green-700 font-medium">View all stories →</a>
+                        </div>
                       </div>
-                      <span className="text-lg font-bold text-[#FC427B]">Starting at $99</span>
                     </div>
                   </div>
                 </div>
-              ))}
+
+                {/* Find Work Dropdown */}
+                <div className="relative group">
+                  <button className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
+                    Find work
+                    <svg className="ml-1 w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <div className="absolute left-0 mt-2 w-80 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
+                    <div className="py-6 px-6">
+                      <div className="grid grid-cols-2 gap-8">
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3">How to find work</h3>
+                          <p className="text-sm text-gray-600 mb-2">
+                            Learn about how to grow your independent career.
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-3">Featured resources</h3>
+                          <ul className="space-y-2">
+                            <li><a href="#" className="text-sm text-gray-600 hover:text-green-600">How to Use Collab-O as a Freelancer</a></li>
+                            <li><a href="#" className="text-sm text-gray-600 hover:text-green-600">Grow Your Freelance Business</a></li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Why Collab-O Dropdown */}
+                <div className="relative group">
+                  <button className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
+                    Why Collab-O
+                    <svg className="ml-1 w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <div className="absolute left-0 mt-2 w-64 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
+                    <div className="py-6 px-6">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Success Stories</h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        See what it's like to collaborate on Collab-O.
+                      </p>
+                      <ul className="space-y-2">
+                        <li><a href="#" className="text-sm text-gray-600 hover:text-green-600">Reviews</a></li>
+                        <li><a href="#" className="text-sm text-gray-600 hover:text-green-600">Case Studies</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <a href="#" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
+                  For enterprise
+                </a>
+              </div>
+            </div>
+
+            {/* Right side buttons */}
+            <div className="hidden md:flex items-center space-x-4">
+              <button className="text-gray-700 hover:text-green-600 px-4 py-2 text-sm font-medium transition-colors duration-200">
+                Log in
+              </button>
+              <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                Sign up
+              </button>
+              <div className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-2">
+                <div className="w-6 h-6 bg-gray-400 rounded-full"></div>
+                <span className="text-sm text-gray-700">Harish</span>
+              </div>
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-gray-700 hover:text-green-600 focus:outline-none"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile menu */}
+          {isMenuOpen && (
+            <div className="md:hidden">
+              <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
+                <a href="#" className="text-gray-700 hover:text-green-600 block px-3 py-2 text-base font-medium">Find talent</a>
+                <a href="#" className="text-gray-700 hover:text-green-600 block px-3 py-2 text-base font-medium">Find work</a>
+                <a href="#" className="text-gray-700 hover:text-green-600 block px-3 py-2 text-base font-medium">Why Collab-O</a>
+                <a href="#" className="text-gray-700 hover:text-green-600 block px-3 py-2 text-base font-medium">For enterprise</a>
+                <div className="pt-4 border-t">
+                  <a href="#" className="text-gray-700 hover:text-green-600 block px-3 py-2 text-base font-medium">Log in</a>
+                  <a href="#" className="bg-green-600 text-white block px-3 py-2 rounded-md text-base font-medium">Sign up</a>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <main className="relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="relative bg-black rounded-3xl overflow-hidden min-h-[600px] flex items-center justify-center">
+            {/* Dot Pattern Background */}
+            <div className="absolute inset-0 opacity-20">
+              <div 
+                className="w-full h-full"
+                style={{
+                  backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`,
+                  backgroundSize: '20px 20px',
+                  backgroundPosition: '0 0, 10px 10px'
+                }}
+              ></div>
+            </div>
+            
+            {/* Main Content */}
+            <div className="relative z-10 text-center">
+              <h1 className="text-6xl md:text-8xl font-bold text-white tracking-wider">
+                COLLAB-O
+              </h1>
+              <p className="mt-8 text-xl text-gray-300 max-w-2xl mx-auto">
+                Connect with top freelancers and grow your business with professional collaboration
+              </p>
+              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+                <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200">
+                  Find Talent
+                </button>
+                <button className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-black px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200">
+                  Start Freelancing
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Features Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Why Choose Collab-O?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              The world's work marketplace where millions of businesses and independent professionals connect and collaborate
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Quality Talent</h3>
+              <p className="text-gray-600">
+                Access to millions of skilled freelancers across various industries and expertise levels
+              </p>
+            </div>
+
+            <div className="text-center p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Secure Payments</h3>
+              <p className="text-gray-600">
+                Safe and secure payment processing with escrow protection for all transactions
+              </p>
+            </div>
+
+            <div className="text-center p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Fast Delivery</h3>
+              <p className="text-gray-600">
+                Get your projects completed quickly with our streamlined collaboration tools
+              </p>
             </div>
           </div>
         </div>
 
         {/* CTA Section */}
-        {!isAuthenticated && (
-          <div className="bg-[#FC427B] text-white py-16">
-            <div className="container mx-auto px-6 text-center">
-              <h2 className="text-4xl font-bold mb-4">Ready to get started?</h2>
-              <p className="text-xl mb-8 opacity-90">Join millions of people who use FreelanceHub to turn their ideas into reality.</p>
-              <button
-                onClick={handleSignup}
-                className="bg-white text-[#FC427B] px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200"
-              >
+        <div className="bg-gray-900 text-white py-20">
+          <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 className="text-4xl font-bold mb-6">
+              Ready to Start Your Next Project?
+            </h2>
+            <p className="text-xl text-gray-300 mb-10">
+              Join millions of businesses and freelancers who trust Collab-O for their professional needs
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200">
                 Get Started Today
+              </button>
+              <button className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200">
+                Learn More
               </button>
             </div>
           </div>
-        )}
-      </div>
-      
-      <Footer />
-    </div>
-  )
-}
+        </div>
+      </main>
 
-export default LandingPage
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Collab-O</h3>
+              <p className="text-gray-600">
+                The world's work marketplace connecting businesses with independent professionals.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 mb-4">For Clients</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-600 hover:text-green-600">How to Hire</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-green-600">Talent Marketplace</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-green-600">Project Catalog</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 mb-4">For Talent</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-600 hover:text-green-600">How to Find Work</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-green-600">Direct Contracts</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-green-600">Find Freelance Jobs</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 mb-4">Resources</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-600 hover:text-green-600">Help Center</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-green-600">Success Stories</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-green-600">Reviews</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-gray-200 text-center">
+            <p className="text-gray-600">© 2024 Collab-O. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;
