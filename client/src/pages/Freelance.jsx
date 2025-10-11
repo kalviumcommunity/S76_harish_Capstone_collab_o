@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import { buildApiUrl } from '../config/api';
 import ProjectCard from '../components/ProjectCard';
 import { FiSearch, FiFilter } from 'react-icons/fi';
 
@@ -31,7 +32,7 @@ const Freelance = () => {
           throw new Error('Unauthorized: No token provided.');
         }
 
-        const res = await fetch('https://s76-harish-capstone-collab-o.onrender.com/projects', {
+        const res = await fetch(buildApiUrl('/projects'), {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,

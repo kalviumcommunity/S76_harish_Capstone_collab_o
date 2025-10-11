@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "https://s76-harish-capstone-collab-o.onrender.com/api/profile/me";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { buildApiUrl } from '../config/api';
+
+const API_URL = buildApiUrl("/api/profile/me");
 const TOKEN = localStorage.getItem("token");
 
 const emptyProfile = {

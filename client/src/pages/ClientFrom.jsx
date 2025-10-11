@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { FiCalendar, FiDollarSign, FiUser, FiClock, FiList, FiTag, FiImage, FiFileText } from 'react-icons/fi';
+import { buildApiUrl } from '../config/api';
 
 const ClientForm = () => {
   const { id } = useParams();
@@ -36,7 +37,7 @@ const ClientForm = () => {
             return;
           }
 
-          const response = await fetch(`https://s76-harish-capstone-collab-o.onrender.com/projects/${id}`, {
+          const response = await fetch(buildApiUrl(`/projects/${id}`), {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -90,8 +91,8 @@ const ClientForm = () => {
 
     try {
       const url = isEditMode
-        ? `https://s76-harish-capstone-collab-o.onrender.com/projects/update/${id}`
-        : 'https://s76-harish-capstone-collab-o.onrender.com/projects/create';
+        ? buildApiUrl(`/projects/update/${id}`)
+        : buildApiUrl('/projects/create');
 
       const method = isEditMode ? 'PUT' : 'POST';
 

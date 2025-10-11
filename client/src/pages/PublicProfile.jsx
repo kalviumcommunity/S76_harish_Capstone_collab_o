@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { buildApiUrl } from '../config/api';
 import { 
   FiArrowLeft, 
   FiMail, 
@@ -27,7 +28,7 @@ const PublicProfile = () => {
     try {
       setLoading(true);
       
-      let response = await fetch(`https://s76-harish-capstone-collab-o.onrender.com/api/profile/${userId}`);
+      let response = await fetch(buildApiUrl(`/api/profile/${userId}`));
       
       if (response.ok) {
         const data = await response.json();
