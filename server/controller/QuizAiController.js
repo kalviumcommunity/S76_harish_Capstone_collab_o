@@ -2,6 +2,12 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Profile = require('../model/Profile');
 require('dotenv').config();
 
+// Check if API key is available
+if (!process.env.GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY is not set in environment variables');
+  process.exit(1);
+}
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function generateQuizFromPrompt(req, res) {
@@ -21,21 +27,30 @@ Return JSON with:
 `;
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    console.log(`🚀 Generating ${numQuestions}-question quiz on "${topic}" at ${difficulty} level with Gemini 2.0 Flash`);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+    
+    console.log('📤 Sending request to Gemini 2.0 Flash...');
     const result = await model.generateContent({ contents: [{ role: 'user', parts: [{ text: prompt }] }] });
     const response = await result.response;
     const text = response.text();
+
+    console.log('📥 Received response from Gemini');
 
     let quiz;
     try {
       const match = text.match(/\[.*\]/s);
       quiz = match ? JSON.parse(match[0]) : JSON.parse(text);
-    } catch {
+      console.log('✅ Successfully parsed quiz JSON with', quiz.length, 'questions');
+    } catch (parseError) {
+      console.error('❌ Failed to parse Gemini quiz JSON:', parseError);
+      console.error('Raw response:', text);
       return res.status(500).json({ error: 'Failed to parse Gemini quiz JSON.' });
     }
 
     res.json({ quiz });
   } catch (err) {
+    console.error('❌ Error in generateQuizFromPrompt:', err);
     res.status(500).json({ error: err?.message || 'Quiz generation failed.' });
   }
 }

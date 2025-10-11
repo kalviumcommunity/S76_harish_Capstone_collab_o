@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { FiCalendar, FiDollarSign, FiUser, FiClock, FiList, FiTag, FiImage, FiFileText } from 'react-icons/fi';
+import ProjectDescriptionGenerator from '../components/ProjectDescriptionGenerator';
+import { FiCalendar, FiDollarSign, FiUser, FiClock, FiList, FiTag, FiImage, FiFileText, FiInfo, FiCheck } from 'react-icons/fi';
 import { buildApiUrl } from '../config/api';
+import { projectCategories, getSkillsForCategory, generateProjectTips, validateProjectData } from '../utils/projectHelpers';
 
 const ClientForm = () => {
   const { id } = useParams();
@@ -25,6 +27,9 @@ const ClientForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
+  const [projectTips, setProjectTips] = useState([]);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -72,14 +77,57 @@ const ClientForm = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const newFormData = { ...formData, [name]: value };
+    setFormData(newFormData);
+    
+    // Generate tips based on current form state
+    const tips = generateProjectTips(newFormData);
+    setProjectTips(tips);
+    
+    // Show skill suggestions when category changes
+    if (name === 'category' && value) {
+      setShowSkillSuggestions(true);
+    }
+    
+    // Clear validation errors when user starts typing
+    if (validationErrors.length > 0) {
+      const errors = validateProjectData(newFormData);
+      setValidationErrors(errors);
+    }
+  };
+
+  const handleAIDescriptionGenerated = (generatedDescription) => {
+    const newFormData = { ...formData, description: generatedDescription };
+    setFormData(newFormData);
+    
+    // Update tips after description is generated
+    const tips = generateProjectTips(newFormData);
+    setProjectTips(tips);
+  };
+
+  const handleSkillSuggestionClick = (skill) => {
+    const currentSkills = formData.requiredSkills ? formData.requiredSkills.split(',').map(s => s.trim()) : [];
+    if (!currentSkills.includes(skill)) {
+      const newSkills = [...currentSkills, skill].join(', ');
+      setFormData({ ...formData, requiredSkills: newSkills });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    const errors = validateProjectData(formData);
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setErrorMessage('Please fix the validation errors below');
+      return;
+    }
+    
     setLoading(true);
     setSuccessMessage('');
     setErrorMessage('');
+    setValidationErrors([]);
 
     const token = localStorage.getItem('token');
 
@@ -221,6 +269,26 @@ const ClientForm = () => {
                 </div>
               )}
 
+              {/* Validation Errors */}
+              {validationErrors.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <h4 className="font-medium text-red-800">Please fix the following issues:</h4>
+                  </div>
+                  <ul className="space-y-1">
+                    {validationErrors.map((error, index) => (
+                      <li key={index} className="text-sm text-red-700 flex items-start gap-2">
+                        <span className="text-red-500 mt-0.5">•</span>
+                        {error}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Form Fields */}
                 
@@ -244,18 +312,26 @@ const ClientForm = () => {
                 </div>
 
                 {/* Description */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <label className="flex items-center gap-1 text-sm font-medium text-gray-700">
                     <FiList className="text-[#FC427B]" />
                     Project Description
                   </label>
+                  
+                  {/* AI Description Generator */}
+                  <ProjectDescriptionGenerator
+                    onDescriptionGenerated={handleAIDescriptionGenerated}
+                    currentTitle={formData.title}
+                    currentCategory={formData.category}
+                  />
+                  
                   <div className="relative rounded-md shadow-sm">
                     <textarea
                       name="description"
-                      placeholder="Provide a detailed description of your project requirements"
+                      placeholder="Provide a detailed description of your project requirements, or use AI to generate one above"
                       value={formData.description}
                       onChange={handleInputChange}
-                      rows="4"
+                      rows="6"
                       className="block w-full border-gray-300 rounded-lg py-3 px-4 placeholder-gray-400 focus:ring-[#FC427B] focus:border-[#FC427B] transition-all"
                       required
                     />
@@ -298,17 +374,60 @@ const ClientForm = () => {
                         required
                       >
                         <option value="">Select project category</option>
-                        <option value="All Projects">All Projects</option>
-                        <option value="Web Development">Web Development</option>
-                        <option value="Mobile Apps">Mobile Apps</option>
-                        <option value="UI/UX Design">UI/UX Design</option>
-                        <option value="Content Writing">Content Writing</option>
-                        <option value="Digital Marketing">Digital Marketing</option>
-                        <option value="Graphic Design">Graphic Design</option>
+                        {projectCategories.map((category, index) => (
+                          <option key={index} value={category}>{category}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
                 </div>
+
+                {/* Skill Suggestions */}
+                {showSkillSuggestions && formData.category && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FiInfo className="text-blue-600" />
+                      <h4 className="font-medium text-blue-800">Suggested Skills for {formData.category}</h4>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {getSkillsForCategory(formData.category).map((skill, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => handleSkillSuggestionClick(skill)}
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"
+                        >
+                          + {skill}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowSkillSuggestions(false)}
+                      className="text-sm text-blue-600 mt-2 hover:text-blue-700"
+                    >
+                      Hide suggestions
+                    </button>
+                  </div>
+                )}
+
+                {/* Project Tips */}
+                {projectTips.length > 0 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FiInfo className="text-yellow-600" />
+                      <h4 className="font-medium text-yellow-800">Tips to improve your project</h4>
+                    </div>
+                    <ul className="space-y-1">
+                      {projectTips.map((tip, index) => (
+                        <li key={index} className="text-sm text-yellow-700 flex items-start gap-2">
+                          <FiCheck className="text-yellow-600 mt-0.5 flex-shrink-0" size={14} />
+                          {tip}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 
                 {/* Two-column layout for skills and deadline */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
