@@ -1,7 +1,8 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BookOpen, Briefcase, ClipboardCheck, Users, Menu, LogOut, User, Settings, X, ChevronDown } from 'lucide-react';
 import { AuthContext } from '../AuthContext'; // Ensure path is correct
+import { authUtils } from '../utils/auth';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ const Navbar = () => {
   
   // Safely extract values with defaults
   const isAuthenticated = authContext?.isAuthenticated || false;
-  const userProfile = authContext?.userProfile || {};
+  const userProfile = useMemo(() => authContext?.userProfile || {}, [authContext?.userProfile]);
   const setIsAuthenticated = authContext?.setIsAuthenticated || (() => {});
   const setUserProfile = authContext?.setUserProfile || (() => {});
   
@@ -36,10 +37,7 @@ const Navbar = () => {
   }, [userProfile]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('email');
-    localStorage.removeItem('userId');
+    authUtils.clearAuth();
     
     setIsAuthenticated(false);
     setUserProfile(null);
