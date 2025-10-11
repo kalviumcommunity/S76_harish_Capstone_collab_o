@@ -1,8 +1,65 @@
-import React, { useState } from 'react';
-// import './App.css'; // You'll need to include Tailwind CSS
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../AuthContext';
 
 const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  
+  // Safely extract values with defaults
+  const isAuthenticated = authContext?.isAuthenticated || false;
+  const userProfile = authContext?.userProfile || {};
+  const loading = authContext?.loading || false;
+  
+  // Get stored username for display
+  const username = localStorage.getItem('username') || userProfile?.name || 'User';
+
+  // Check if user is already logged in and redirect
+  useEffect(() => {
+    // Only check after AuthContext has finished loading
+    if (!loading) {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      
+      // If user has valid authentication data, redirect to freelance page
+      if (token && userId) {
+        navigate('/freelance');
+      }
+    }
+  }, [navigate, loading]);
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="relative w-16 h-16">
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-[#FC427B] border-opacity-20 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-full h-full border-4 border-[#FC427B] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
+  const handleSignup = () => {
+    navigate('/signup');
+  };
+
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      navigate('/freelance');
+    } else {
+      navigate('/signup');
+    }
+  };
+
+  const handleDashboard = () => {
+    navigate('/freelance');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -111,16 +168,29 @@ const LandingPage = () => {
 
             {/* Right side buttons */}
             <div className="hidden md:flex items-center space-x-4">
-              <button className="text-gray-700 hover:text-[#FC427B] px-4 py-2 text-sm font-medium transition-colors duration-200">
-                Log in
-              </button>
-              <button className="bg-[#FC427B] hover:bg-[#b85270] text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
-                Sign up
-              </button>
-              <div className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-2">
-                <div className="w-6 h-6 bg-gray-400 rounded-full"></div>
-                <span className="text-sm text-gray-700">Harish</span>
-              </div>
+              {!isAuthenticated ? (
+                <>
+                  <button 
+                    onClick={handleLogin}
+                    className="text-gray-700 hover:text-[#FC427B] px-4 py-2 text-sm font-medium transition-colors duration-200"
+                  >
+                    Log in
+                  </button>
+                  <button 
+                    onClick={handleSignup}
+                    className="bg-[#FC427B] hover:bg-[#b85270] text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                  >
+                    Sign up
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-2 cursor-pointer" onClick={handleDashboard}>
+                  <div className="w-6 h-6 bg-[#FC427B] rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-medium">{username.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <span className="text-sm text-gray-700">{username}</span>
+                </div>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -145,8 +215,20 @@ const LandingPage = () => {
                 <a href="#" className="text-gray-700 hover:text-[#FC427B] block px-3 py-2 text-base font-medium">Why Collab-O</a>
                 <a href="#" className="text-gray-700 hover:text-[#FC427B] block px-3 py-2 text-base font-medium">For enterprise</a>
                 <div className="pt-4 border-t">
-                  <a href="#" className="text-gray-700 hover:text-[#FC427B] block px-3 py-2 text-base font-medium">Log in</a>
-                  <a href="#" className="bg-[#FC427B] text-white block px-3 py-2 rounded-md text-base font-medium">Sign up</a>
+                  {!isAuthenticated ? (
+                    <>
+                      <button onClick={handleLogin} className="text-gray-700 hover:text-[#FC427B] block w-full text-left px-3 py-2 text-base font-medium">
+                        Log in
+                      </button>
+                      <button onClick={handleSignup} className="bg-[#FC427B] text-white block w-full text-left px-3 py-2 rounded-md text-base font-medium mt-2">
+                        Sign up
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={handleDashboard} className="bg-[#FC427B] text-white block w-full text-left px-3 py-2 rounded-md text-base font-medium">
+                      Dashboard
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -179,11 +261,17 @@ const LandingPage = () => {
                 Connect with top freelancers and grow your business with professional collaboration
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="bg-[#FC427B] hover:bg-[#b85270] text-white px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200">
+                <button 
+                  onClick={() => navigate('/freelance')}
+                  className="bg-[#FC427B] hover:bg-[#b85270] text-white px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200"
+                >
                   Find Talent
                 </button>
-                <button className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-black px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200">
-                  Start Freelancing
+                <button 
+                  onClick={handleGetStarted}
+                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-black px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200"
+                >
+                  {isAuthenticated ? 'Go to Dashboard' : 'Start Freelancing'}
                 </button>
               </div>
             </div>
@@ -250,8 +338,11 @@ const LandingPage = () => {
               Join millions of businesses and freelancers who trust Collab-O for their professional needs
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-[#FC427B] hover:bg-[#b85270] text-white px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200">
-                Get Started Today
+              <button 
+                onClick={handleGetStarted}
+                className="bg-[#FC427B] hover:bg-[#b85270] text-white px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200"
+              >
+                {isAuthenticated ? 'Go to Dashboard' : 'Get Started Today'}
               </button>
               <button className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 rounded-lg text-lg font-medium transition-colors duration-200">
                 Learn More
