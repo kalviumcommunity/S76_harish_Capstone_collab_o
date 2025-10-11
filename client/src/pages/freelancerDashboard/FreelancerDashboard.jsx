@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import { toast, ToastContainer } from 'react-toastify';
@@ -7,6 +7,7 @@ import ProposalCard from './ProposalCard';
 import Sidebar from './SideBar';
 import axios from 'axios';
 import { FiPlus, FiGrid, FiList, FiFilter, FiCalendar, FiSearch } from 'react-icons/fi';
+import { apiConfig, buildApiUrl } from '../../config/api';
 
 const FreelancerDashboard = () => {
   const navigate = useNavigate();
@@ -31,19 +32,10 @@ const FreelancerDashboard = () => {
   const token = localStorage.getItem('token');
   const username = localStorage.getItem('username') || 'user';
 
-  useEffect(() => {
-    if (!userId || !token) {
-      toast.error('Authentication required. Please login.');
-      navigate('/login');
-      return;
-    }
-    fetchUserProposals();
-  }, [userId, token, navigate]);
-
-  const fetchUserProposals = async () => {
+  const fetchUserProposals = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`https://s76-harish-capstone-collab-o.onrender.com/api/proposals/freelancer/${userId}`, {
+      const response = await axios.get(buildApiUrl(apiConfig.endpoints.proposalsByFreelancer(userId)), {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -62,7 +54,16 @@ const FreelancerDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, token]);
+
+  useEffect(() => {
+    if (!userId || !token) {
+      toast.error('Authentication required. Please login.');
+      navigate('/login');
+      return;
+    }
+    fetchUserProposals();
+  }, [userId, token, navigate, fetchUserProposals]);
 
   const handleViewProject = (projectId) => {
     navigate(`/projects/${projectId}`);
@@ -87,7 +88,7 @@ const FreelancerDashboard = () => {
         return p;
       }));
       toast.success("Connection request sent to client!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to connect with client");
     }
   };

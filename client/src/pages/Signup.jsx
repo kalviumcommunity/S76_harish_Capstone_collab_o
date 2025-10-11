@@ -3,6 +3,7 @@ import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { buildApiUrl } from '../config/api';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const Signup = () => {
         return;
       }
 
-      const response = await fetch('https://s76-harish-capstone-collab-o.onrender.com/auth/signup', {
+      const response = await fetch(buildApiUrl('/auth/signup'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

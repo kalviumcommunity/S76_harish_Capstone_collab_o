@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ProjectCard from './ProjectCard';
+import { buildApiUrl } from '../../config/api';
 import Sidebar from './SideBar';
 import { FiPlus, FiGrid, FiList, FiFilter, FiCalendar } from 'react-icons/fi';
 
@@ -26,19 +27,10 @@ const ClientDashboard = () => {
     day: 'numeric'
   });
 
-  useEffect(() => {
-    if (!userId || !token) {
-      toast.error('Authentication required. Please login.');
-      navigate('/login');
-      return;
-    }
-    fetchUserProjects();
-  }, [userId, token, navigate]);
-
-  const fetchUserProjects = async () => {
+  const fetchUserProjects = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`https://s76-harish-capstone-collab-o.onrender.com/projects/user/${userId}`, {
+      const res = await fetch(buildApiUrl(`/projects/user/${userId}`), {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -54,7 +46,16 @@ const ClientDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, token]);
+
+  useEffect(() => {
+    if (!userId || !token) {
+      toast.error('Authentication required. Please login.');
+      navigate('/login');
+      return;
+    }
+    fetchUserProjects();
+  }, [userId, token, navigate, fetchUserProjects]);
 
   const handleViewProposals = (projectId) => {
     navigate(`/projects/${projectId}`);

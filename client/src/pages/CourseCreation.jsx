@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { buildApiUrl } from '../config/api';
 import { FiSend, FiClock, FiBookOpen, FiTag, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 
@@ -26,7 +27,7 @@ const CourseCreation = () => {
         setRecentPrompts((prev) => [aiPrompt, ...prev.slice(0, 4)]);
       }
 
-      const response = await axios.post('https://s76-harish-capstone-collab-o.onrender.com/api/ai-course/generate', {
+      const response = await axios.post(buildApiUrl('/api/ai-course/generate'), {
         prompt: aiPrompt
       });
 
@@ -199,7 +200,7 @@ const CourseCreation = () => {
                     <ul className="space-y-2">
                       {courseData.lessons[currentLessonIndex].topics.map((topic, i) => (
                         <li key={i} className="flex items-start">
-                          <span className="inline-block h-5 w-5 rounded-full bg-[#FC427B] bg-opacity-20 text-[#FC427B] text-xs flex items-center justify-center font-medium mr-2 mt-0.5">
+                          <span className="flex h-5 w-5 rounded-full bg-[#FC427B] bg-opacity-20 text-[#FC427B] text-xs items-center justify-center font-medium mr-2 mt-0.5">
                             {i+1}
                           </span>
                           <span className="text-gray-300">{topic}</span>

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FiCheckCircle, FiArrowLeft, FiUser, FiMessageSquare, FiCalendar, FiCheck, FiXCircle, FiClock, FiFile, FiPackage } from 'react-icons/fi';
 import DeliverableViewer from '../../components/DeliverableVeiwer';
+import { buildApiUrl } from '../../config/api';
 
 const ProposalsPage = () => {
   const { projectId } = useParams();
@@ -26,18 +27,10 @@ const ProposalsPage = () => {
     second: '2-digit'
   });
 
-  useEffect(() => {
-    if (!projectId) {
-      toast.error('Project ID is missing!');
-      return;
-    }
-    fetchProposals();
-  }, [projectId]);
-
-  const fetchProposals = async () => {
+  const fetchProposals = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`https://s76-harish-capstone-collab-o.onrender.com/api/proposals/${projectId}`, {
+      const res = await fetch(buildApiUrl(`/api/proposals/${projectId}`), {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -52,12 +45,20 @@ const ProposalsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, token]);
 
-  const handleAccept = async (proposalId, freelancerId) => {
+  useEffect(() => {
+    if (!projectId) {
+      toast.error('Project ID is missing!');
+      return;
+    }
+    fetchProposals();
+  }, [projectId, fetchProposals]);
+
+  const handleAccept = async (proposalId) => {
     try {
       // Accept the proposal
-      const res = await fetch(`https://s76-harish-capstone-collab-o.onrender.com/api/proposals/${proposalId}/accept`, {
+      const res = await fetch(buildApiUrl(`/api/proposals/${proposalId}/accept`), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -384,7 +385,7 @@ const ProposalsPage = () => {
                           ) : (
                             <div className="flex justify-center mt-4">
                               <button
-                                onClick={() => handleAccept(proposal._id, proposal.freelancerId?._id)}
+                                onClick={() => handleAccept(proposal._id)}
                                 className="flex items-center justify-center gap-2 px-4 py-3 w-full
                                 bg-gradient-to-r from-[#FC427B] to-[#e03a6d] text-white rounded-lg 
                                 hover:from-[#e03a6d] hover:to-[#d42e60] transition-all duration-300 shadow-md"
