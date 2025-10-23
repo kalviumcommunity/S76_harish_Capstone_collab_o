@@ -1,9 +1,11 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../AuthContext'
+import { buildApiUrl } from '../config/api'
+import { authUtils } from '../utils/auth'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -15,6 +17,16 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    
+    if (token && userId) {
+      navigate('/freelance');
+    }
+  }, [navigate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
@@ -25,7 +37,7 @@ const Login = () => {
     setIsLoading(true)
     
     try {
-      const response = await fetch('http://localhost:5000/auth/login', {
+      const response = await fetch(buildApiUrl('/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,10 +54,15 @@ const Login = () => {
         const email = data.email || formData.email
 
         // Save all user data in localStorage
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('userId', data.userId)
-        localStorage.setItem('username', username)
-        localStorage.setItem('email', email)
+        authUtils.setUserData({
+          token: data.token,
+          userId: data.userId,
+          username: username,
+          email: email
+        });
+        
+        // Set remember me for persistent session
+        authUtils.setRememberMe(true);
 
         // Update Auth Context
         setIsAuthenticated(true)
@@ -58,7 +75,7 @@ const Login = () => {
         toast.success('Login successful! Welcome back!')
         
         setTimeout(() => {
-          navigate('/')
+          navigate('/freelance')
         }, 1500)
       } else {
         const errorData = await response.json()
