@@ -93,8 +93,9 @@ const FreelancerDashboard = () => {
     }
   };
 
-  const handleMessage = (clientId) => {
-    navigate(`/messages/chat/${clientId}`);
+  const handleMessage = (proposalId) => {
+    // Open chat scoped to this proposal
+    navigate(`/messages/chat/${proposalId}`);
   };
 
   // Filter proposals based on search query and active filter

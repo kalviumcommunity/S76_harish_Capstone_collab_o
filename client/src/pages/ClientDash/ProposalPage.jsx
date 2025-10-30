@@ -75,8 +75,8 @@ const ProposalsPage = () => {
         p._id === proposalId ? {...p, status: 'accepted'} : p
       ));
       
-      // Optionally redirect to messaging
-      // navigate(`/messages/chat/${freelancerId}`);
+  // Optionally redirect to messaging (open chat for this proposal)
+  // navigate(`/messages/chat/${freelancerId}`);
     } catch (error) {
       toast.error(error.message || 'Something went wrong while accepting the proposal.');
     }
@@ -187,7 +187,7 @@ const ProposalsPage = () => {
                 </p>
               </div>
               <button 
-                onClick={() => navigate(`/messages/chat/${acceptedProposal?.freelancerId?._id}`)}
+                onClick={() => navigate(`/messages/chat/${acceptedProposal?._id}`)}
                 className="ml-auto px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors flex items-center"
               >
                 <FiMessageSquare className="mr-2" />
