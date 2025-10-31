@@ -53,6 +53,18 @@ const Navbar = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMenuOpen && !event.target.closest('.user-menu-container')) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
+
   const handleLearningClick = () => navigate('/courseCreation');
   const handleFreeLanceClick = () => navigate('/freelance');
   const handleQuizClick = () => navigate('/modules');
@@ -82,8 +94,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full bg-white border-b border-gray-100">
-      <div className="container mx-auto px-6 py-4">
+    <nav className="w-full bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+      <div className="container mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div 
@@ -157,47 +169,48 @@ const Navbar = () => {
                 </button>
               </>
             ) : (
-              <div className="relative">
+              <div className="relative user-menu-container">
                 <button
                   onClick={toggleMenu}
-                  className="flex items-center space-x-2 text-gray-800 font-medium hover:text-[#FC427B] transition-colors"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-xl text-gray-800 font-medium hover:bg-gray-50 transition-all duration-200"
                 >
-                  <div className="w-8 h-8 rounded-full bg-[#fff5f8] flex items-center justify-center">
-                    <span className="text-[#FC427B] font-bold">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#FC427B]/10 to-purple-100/50 flex items-center justify-center border-2 border-[#FC427B]/20">
+                    <span className="text-[#FC427B] font-bold text-sm">
                       {getUserInitials()}
                     </span>
                   </div>
-                  <span className="hidden lg:inline-block">{username || 'User'}</span>
-                  <ChevronDown size={16} className={`transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
+                  <span className="hidden lg:inline-block text-sm">{username || 'User'}</span>
+                  <ChevronDown size={16} className={`transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white border border-gray-100 rounded-lg shadow-lg z-50">
-                    <div className="p-3 border-b border-gray-100">
-                      <p className="font-medium text-gray-900">{username || 'User'}</p>
-                      <p className="text-sm text-gray-500">{userProfile?.email || 'user@example.com'}</p>
+                  <div className="absolute right-0 mt-3 w-64 origin-top-right bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 animate-scaleIn overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                      <p className="font-semibold text-gray-900 text-sm">{username || 'User'}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{userProfile?.email || 'user@example.com'}</p>
                     </div>
-                    <div className="py-1">
+                    <div className="py-2">
                       <button
                         onClick={handleProfileClick}
-                        className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        className="flex w-full items-center px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors group"
                       >
-                        <User size={16} className="mr-3 text-gray-400" />
-                        Profile
+                        <User size={18} className="mr-3 text-gray-400 group-hover:text-[#FC427B] transition-colors" />
+                        <span className="group-hover:text-[#FC427B] font-medium">Profile</span>
                       </button>
                       <button
                         onClick={handleSettingsClick}
-                        className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        className="flex w-full items-center px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 transition-colors group"
                       >
-                        <Settings size={16} className="mr-3 text-gray-400" />
-                        Settings
+                        <Settings size={18} className="mr-3 text-gray-400 group-hover:text-[#FC427B] transition-colors" />
+                        <span className="group-hover:text-[#FC427B] font-medium">Settings</span>
                       </button>
+                      <div className="my-1 border-t border-gray-100"></div>
                       <button
                         onClick={handleLogout}
-                        className="flex w-full items-center px-4 py-2 text-sm text-[#FC427B] hover:bg-gray-50"
+                        className="flex w-full items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors group"
                       >
-                        <LogOut size={16} className="mr-3 text-[#FC427B]" />
-                        Log Out
+                        <LogOut size={18} className="mr-3 text-red-500 group-hover:text-red-600 transition-colors" />
+                        <span className="font-medium">Log Out</span>
                       </button>
                     </div>
                   </div>

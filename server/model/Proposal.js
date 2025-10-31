@@ -14,6 +14,11 @@ const proposalSchema = new mongoose.Schema({
   }],
   deliveryMessage: { type: String },
   deliveryStatus: { type: String, enum: ['not_submitted', 'submitted', 'approved', 'rejected'], default: 'not_submitted' }
+  ,
+  // Payment fields
+  paymentStatus: { type: String, enum: ['unpaid', 'pending', 'paid'], default: 'unpaid' },
+  paymentIntentId: { type: String },
+  amountPaid: { type: Number, default: 0 }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Proposal', proposalSchema);

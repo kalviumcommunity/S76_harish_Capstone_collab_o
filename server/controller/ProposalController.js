@@ -43,7 +43,7 @@ exports.getProposalsForProject = async (req, res) => {
   try {
     const proposals = await Proposal.find({ projectId: req.params.projectId })
       .populate('freelancerId', 'name email') 
-      .populate('projectId', 'title');        
+      .populate('projectId', 'title price');        
     res.status(200).json(proposals);
   } catch (err) {
     res.status(500).json({ error: err.message });

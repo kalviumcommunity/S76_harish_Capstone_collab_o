@@ -87,6 +87,8 @@ app.use('/api/ai-course', courseAIRoutes);
 app.use('/api/proposals', proposalRoutes);
 // messages
 app.use('/api/messages', require('./routes/messageRoutes'));
+// payments
+app.use('/api/payments', require('./routes/paymentRoutes'));
 // app.use('/api/messaging', messagingRoutes);
 
 

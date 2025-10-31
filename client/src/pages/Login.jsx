@@ -94,31 +94,39 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute top-20 right-20 w-72 h-72 bg-[#FC427B] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
+      <div className="absolute bottom-20 left-20 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" style={{animationDelay: '1s'}}></div>
+
       <ToastContainer position="top-right" autoClose={3000} />
-      
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Sign in to your account
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="text-center animate-fadeIn">
+          {/* Logo */}
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-[#FC427B] to-[#e03a6d] rounded-2xl flex items-center justify-center mb-6 shadow-lg hover:scale-110 transition-transform duration-300">
+            <span className="text-white font-bold text-2xl">C</span>
+          </div>
+          <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
+            Welcome Back
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Welcome back! Please enter your details.
+          <p className="mt-3 text-base text-gray-600">
+            Sign in to continue to <span className="font-semibold text-[#FC427B]">Collab-O</span>
           </p>
         </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-gray-200">
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="bg-white py-10 px-6 shadow-2xl sm:rounded-2xl sm:px-12 border border-gray-100 animate-scaleIn backdrop-blur-sm">
           <form onSubmit={handleLogin} className="space-y-6">
             {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+            <div className="animate-fadeIn" style={{animationDelay: '0.1s'}}>
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Address
               </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiMail className="h-5 w-5 text-gray-400" />
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <FiMail className="h-5 w-5 text-gray-400 group-focus-within:text-[#FC427B] transition-colors" />
                 </div>
                 <input
                   id="email"
@@ -128,20 +136,22 @@ const Login = () => {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#FC427B] focus:border-[#FC427B] sm:text-sm"
-                  placeholder="Enter your email"
+                  className="appearance-none block w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl
+                    placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FC427B] focus:border-transparent
+                    transition-all duration-200 bg-gray-50 focus:bg-white text-sm"
+                  placeholder="you@example.com"
                 />
               </div>
             </div>
 
             {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <div className="animate-fadeIn" style={{animationDelay: '0.2s'}}>
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Password
               </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="h-5 w-5 text-gray-400" />
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <FiLock className="h-5 w-5 text-gray-400 group-focus-within:text-[#FC427B] transition-colors" />
                 </div>
                 <input
                   id="password"
@@ -151,14 +161,16 @@ const Login = () => {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#FC427B] focus:border-[#FC427B] sm:text-sm"
+                  className="appearance-none block w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-xl
+                    placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FC427B] focus:border-transparent
+                    transition-all duration-200 bg-gray-50 focus:bg-white text-sm"
                   placeholder="Enter your password"
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                    className="text-gray-400 hover:text-[#FC427B] focus:outline-none transition-colors"
                   >
                     {showPassword ? (
                       <FiEyeOff className="h-5 w-5" />
@@ -171,59 +183,72 @@ const Login = () => {
             </div>
 
             {/* Forgot Password */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-end animate-fadeIn" style={{animationDelay: '0.3s'}}>
               <div className="text-sm">
                 <button
                   type="button"
-                  className="font-medium text-[#FC427B] hover:text-[#e03a6d] transition-colors duration-200"
+                  className="font-semibold text-[#FC427B] hover:text-[#e03a6d] transition-colors duration-200 hover:underline"
                 >
-                  Forgot your password?
+                  Forgot password?
                 </button>
               </div>
             </div>
 
             {/* Submit Button */}
-            <div>
+            <div className="animate-fadeIn" style={{animationDelay: '0.4s'}}>
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#FC427B] hover:bg-[#e03a6d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC427B] transition-colors duration-200 ${
-                  isLoading ? 'opacity-75 cursor-not-allowed' : ''
-                }`}
+                className={`relative w-full flex justify-center items-center py-4 px-6 text-base font-semibold rounded-xl
+                  text-white bg-gradient-to-r from-[#FC427B] to-[#e03a6d]
+                  shadow-lg hover:shadow-xl transform transition-all duration-200
+                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC427B]
+                  ${isLoading ? 'opacity-75 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-[0.98]'}`}
               >
                 {isLoading ? (
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Signing in...
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Signing in...</span>
                   </div>
                 ) : (
-                  'Sign in'
+                  <span>Sign in to your account</span>
                 )}
               </button>
             </div>
           </form>
 
           {/* Register Link */}
-          <div className="mt-6">
+          <div className="mt-8 animate-fadeIn" style={{animationDelay: '0.5s'}}>
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t-2 border-gray-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">New to FreelanceHub?</span>
+                <span className="px-4 bg-white text-gray-500 font-medium">New to Collab-O?</span>
               </div>
             </div>
 
             <div className="mt-6">
               <button
                 onClick={handleRegisterClick}
-                className="w-full flex justify-center py-2 px-4 border border-[#FC427B] text-sm font-medium rounded-md text-[#FC427B] bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC427B] transition-colors duration-200"
+                className="w-full flex justify-center items-center py-3.5 px-6 border-2 border-[#FC427B]
+                  text-base font-semibold rounded-xl text-[#FC427B] bg-white
+                  hover:bg-pink-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FC427B]
+                  transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md"
               >
                 Create an account
               </button>
             </div>
           </div>
         </div>
+
+        {/* Footer text */}
+        <p className="mt-6 text-center text-sm text-gray-600 animate-fadeIn" style={{animationDelay: '0.6s'}}>
+          By continuing, you agree to our{' '}
+          <a href="#" className="font-medium text-[#FC427B] hover:text-[#e03a6d]">Terms of Service</a>
+          {' '}and{' '}
+          <a href="#" className="font-medium text-[#FC427B] hover:text-[#e03a6d]">Privacy Policy</a>
+        </p>
       </div>
     </div>
   )
