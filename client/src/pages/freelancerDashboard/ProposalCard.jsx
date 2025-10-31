@@ -45,21 +45,7 @@ const ProposalCard = ({ proposal, onViewProject, onConnect, onMessage, viewMode 
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
-  const renderDeliverableUpload = () => {
-    if (!showDeliverables) {
-      return (
-        <button 
-          onClick={() => setShowDeliverables(true)}
-          className="w-full py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg font-medium transition-colors flex items-center justify-center mt-2"
-        >
-          <FiUpload className="mr-2" size={14} />
-          Upload Deliverables
-        </button>
-      );
-    }
-    
-    return <DeliverableUpload proposal={proposal} />;
-  };
+  
 
   if (viewMode === 'grid') {
     return (
@@ -107,7 +93,7 @@ const ProposalCard = ({ proposal, onViewProject, onConnect, onMessage, viewMode 
                 <div className="flex space-x-2">
                   {proposal.connected ? (
                     <button 
-                      onClick={() => onMessage(proposal.clientId)}
+                      onClick={() => onMessage(proposal._id)}
                       className="flex-1 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors flex items-center justify-center"
                     >
                       <FiMessageSquare className="mr-2" size={14} />
@@ -196,7 +182,7 @@ const ProposalCard = ({ proposal, onViewProject, onConnect, onMessage, viewMode 
             {proposal.status === 'accepted' && (
               proposal.connected ? (
                 <button 
-                  onClick={() => onMessage(proposal.clientId)}
+                  onClick={() => onMessage(proposal._id)}
                   className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center"
                 >
                   <FiMessageSquare className="mr-2" size={14} />

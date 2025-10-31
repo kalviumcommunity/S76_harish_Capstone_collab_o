@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { FiCheckCircle, FiArrowLeft, FiUser, FiMessageSquare, FiCalendar, FiCheck, FiXCircle, FiClock, FiFile, FiPackage } from 'react-icons/fi';
 import DeliverableViewer from '../../components/DeliverableVeiwer';
 import { buildApiUrl } from '../../config/api';
+import { startRazorpayPayment } from '../../utils/payment';
 
 const ProposalsPage = () => {
   const { projectId } = useParams();
@@ -75,8 +76,8 @@ const ProposalsPage = () => {
         p._id === proposalId ? {...p, status: 'accepted'} : p
       ));
       
-      // Optionally redirect to messaging
-      // navigate(`/messages/chat/${freelancerId}`);
+  // Optionally redirect to messaging (open chat for this proposal)
+  // navigate(`/messages/chat/${freelancerId}`);
     } catch (error) {
       toast.error(error.message || 'Something went wrong while accepting the proposal.');
     }
@@ -113,6 +114,20 @@ const ProposalsPage = () => {
   // Check if any proposal is accepted
   const hasAcceptedProposal = proposals.some(p => p.status === 'accepted');
   const acceptedProposal = proposals.find(p => p.status === 'accepted');
+  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
+  const handlePayNow = async () => {
+    if (!acceptedProposal) return;
+    const price = acceptedProposal?.projectId?.price;
+    if (!price) {
+      toast.error('Price not available for this project.');
+      return;
+    }
+    // Convert to paise
+    const amount = Math.round(Number(price) * 100);
+    const ok = await startRazorpayPayment({ apiBase, proposalId: acceptedProposal._id, amount, name: 'Project Payment', description: acceptedProposal.projectId?.title || 'Project' });
+    if (ok) toast.success('Payment flow initiated');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-gray-50 to-gray-100">
@@ -186,13 +201,21 @@ const ProposalsPage = () => {
                   {acceptedProposal?.freelancerId?.email || 'N/A'}
                 </p>
               </div>
-              <button 
-                onClick={() => navigate(`/messages/chat/${acceptedProposal?.freelancerId?._id}`)}
-                className="ml-auto px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors flex items-center"
-              >
-                <FiMessageSquare className="mr-2" />
-                Message Freelancer
-              </button>
+              <div className="ml-auto flex gap-2">
+                <button 
+                  onClick={handlePayNow}
+                  className="px-4 py-2 bg-gradient-to-r from-[#FC427B] to-[#e03a6d] text-white rounded-lg font-medium transition-colors"
+                >
+                  Pay Now
+                </button>
+                <button 
+                  onClick={() => navigate(`/messages/chat/${acceptedProposal?._id}`)}
+                  className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors flex items-center"
+                >
+                  <FiMessageSquare className="mr-2" />
+                  Message Freelancer
+                </button>
+              </div>
             </div>
             
             {/* Deliverables viewer component */}

@@ -1,4 +1,6 @@
 const Proposal = require('../model/Proposal');
+const ioService = require('../services/io');
+const Project = require('../model/ProjectSchema');
 // const Project = require('../model/Project');
 const multer = require('multer');
 const path = require('path');
@@ -41,7 +43,7 @@ exports.getProposalsForProject = async (req, res) => {
   try {
     const proposals = await Proposal.find({ projectId: req.params.projectId })
       .populate('freelancerId', 'name email') 
-      .populate('projectId', 'title');        
+      .populate('projectId', 'title price');        
     res.status(200).json(proposals);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -51,11 +53,35 @@ exports.getProposalsForProject = async (req, res) => {
 // Accept a specific proposal
 exports.acceptProposal = async (req, res) => {
   try {
+    // Update proposal status to accepted
     const proposal = await Proposal.findByIdAndUpdate(
       req.params.id,
       { status: 'accepted' },
       { new: true }
-    );
+    ).populate('freelancerId').populate({ path: 'projectId', populate: { path: 'createdBy' } });
+
+    if (!proposal) {
+      return res.status(404).json({ error: 'Proposal not found' });
+    }
+
+    // Emit socket event to notify participants and create a room for the proposal
+    try {
+      const io = ioService.getIO();
+      const room = `proposal_${proposal._id}`;
+
+      // Emit to room (if clients joined), and also to users' personal rooms
+      if (io) {
+        io.to(room).emit('proposalAccepted', { proposal });
+        if (proposal.freelancerId && proposal.freelancerId._id) {
+          io.to(`user_${proposal.freelancerId._id}`).emit('proposalAccepted', { proposal });
+        }
+        if (proposal.projectId && proposal.projectId.createdBy && proposal.projectId.createdBy._id) {
+          io.to(`user_${proposal.projectId.createdBy._id}`).emit('proposalAccepted', { proposal });
+        }
+      }
+    } catch (emitErr) {
+      console.error('Failed to emit socket event for accepted proposal', emitErr);
+    }
 
     res.status(200).json(proposal);
   } catch (err) {
