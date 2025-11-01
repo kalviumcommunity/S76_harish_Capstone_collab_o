@@ -19,6 +19,7 @@ const Navbar = () => {
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAISkillsOpen, setIsAISkillsOpen] = useState(false);
   const [username, setUsername] = useState('');
 
   // Check local storage on component mount
@@ -53,21 +54,34 @@ const Navbar = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Close dropdown when clicking outside
+  const toggleAISkills = () => {
+    setIsAISkillsOpen(!isAISkillsOpen);
+  };
+
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isMenuOpen && !event.target.closest('.user-menu-container')) {
         setIsMenuOpen(false);
       }
+      if (isAISkillsOpen && !event.target.closest('.ai-skills-container')) {
+        setIsAISkillsOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isAISkillsOpen]);
 
-  const handleLearningClick = () => navigate('/courseCreation');
+  const handleLearningClick = () => {
+    navigate('/courseCreation');
+    setIsAISkillsOpen(false);
+  };
+  const handleQuizClick = () => {
+    navigate('/modules');
+    setIsAISkillsOpen(false);
+  };
   const handleFreeLanceClick = () => navigate('/freelance');
-  const handleQuizClick = () => navigate('/modules');
   const handleFormClick = () => navigate('/clientDashBoard');
   const handleDashboardClick = () => navigate('/freelancerDashboard');
   const handleProfileClick = () => {
@@ -83,6 +97,10 @@ const Navbar = () => {
     return location.pathname === path
       ? 'text-[#FC427B] font-semibold'
       : 'text-gray-800';
+  };
+
+  const isAISkillsActive = () => {
+    return location.pathname === '/courseCreation' || location.pathname === '/modules';
   };
 
   // Get user initials for avatar
@@ -110,13 +128,48 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <button 
-              onClick={handleLearningClick}
-              className={`flex items-center space-x-1 font-medium hover:text-[#FC427B] transition-colors ${getActiveStyle('/courseCreation')}`}
-            >
-              <BookOpen size={18} />
-              <span>Learning</span>
-            </button>
+            {/* AI Skills Dropdown */}
+            <div className="relative ai-skills-container">
+              <button 
+                onClick={toggleAISkills}
+                className={`flex items-center space-x-1 font-medium hover:text-[#FC427B] transition-colors ${
+                  isAISkillsActive() ? 'text-[#FC427B] font-semibold' : 'text-gray-800'
+                }`}
+              >
+                <BookOpen size={18} />
+                <span>AI Skills</span>
+                <ChevronDown size={16} className={`transition-transform duration-200 ${isAISkillsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isAISkillsOpen && (
+                <div className="absolute left-0 mt-3 w-48 origin-top bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                  <div className="py-2">
+                    <button
+                      onClick={handleLearningClick}
+                      className={`flex w-full items-center px-4 py-3 text-sm hover:bg-pink-50 transition-colors group ${
+                        location.pathname === '/courseCreation' ? 'bg-pink-50 text-[#FC427B]' : 'text-gray-700'
+                      }`}
+                    >
+                      <BookOpen size={18} className={`mr-3 transition-colors ${
+                        location.pathname === '/courseCreation' ? 'text-[#FC427B]' : 'text-gray-400 group-hover:text-[#FC427B]'
+                      }`} />
+                      <span className="group-hover:text-[#FC427B] font-medium">Learning</span>
+                    </button>
+                    <button
+                      onClick={handleQuizClick}
+                      className={`flex w-full items-center px-4 py-3 text-sm hover:bg-pink-50 transition-colors group ${
+                        location.pathname === '/modules' ? 'bg-pink-50 text-[#FC427B]' : 'text-gray-700'
+                      }`}
+                    >
+                      <ClipboardCheck size={18} className={`mr-3 transition-colors ${
+                        location.pathname === '/modules' ? 'text-[#FC427B]' : 'text-gray-400 group-hover:text-[#FC427B]'
+                      }`} />
+                      <span className="group-hover:text-[#FC427B] font-medium">Take Quiz</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <button 
               onClick={handleFreeLanceClick}
@@ -124,14 +177,6 @@ const Navbar = () => {
             >
               <Briefcase size={18} />
               <span>Freelance</span>
-            </button>
-
-            <button 
-              onClick={handleQuizClick}
-              className={`flex items-center space-x-1 font-medium hover:text-[#FC427B] transition-colors ${getActiveStyle('/modules')}`}
-            >
-              <ClipboardCheck size={18} />
-              <span>Take Quiz</span>
             </button>
 
             <button 
@@ -236,16 +281,46 @@ const Navbar = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden mt-4 pt-4 border-t border-gray-100">
             <div className="flex flex-col space-y-3">
-              <button
-                onClick={() => {
-                  handleLearningClick();
-                  toggleMobileMenu();
-                }}
-                className={`flex items-center space-x-2 py-2 ${getActiveStyle('/courseCreation')}`}
-              >
-                <BookOpen size={18} />
-                <span>Learning</span>
-              </button>
+              {/* AI Skills in Mobile */}
+              <div>
+                <button
+                  onClick={toggleAISkills}
+                  className={`flex items-center justify-between w-full py-2 ${
+                    isAISkillsActive() ? 'text-[#FC427B] font-semibold' : 'text-gray-800'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <BookOpen size={18} />
+                    <span>AI Skills</span>
+                  </div>
+                  <ChevronDown size={16} className={`transition-transform duration-200 ${isAISkillsOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isAISkillsOpen && (
+                  <div className="ml-6 mt-2 space-y-2">
+                    <button
+                      onClick={() => {
+                        handleLearningClick();
+                        toggleMobileMenu();
+                      }}
+                      className={`flex items-center space-x-2 py-2 ${getActiveStyle('/courseCreation')}`}
+                    >
+                      <BookOpen size={16} />
+                      <span>Learning</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleQuizClick();
+                        toggleMobileMenu();
+                      }}
+                      className={`flex items-center space-x-2 py-2 ${getActiveStyle('/modules')}`}
+                    >
+                      <ClipboardCheck size={16} />
+                      <span>Take Quiz</span>
+                    </button>
+                  </div>
+                )}
+              </div>
 
               <button
                 onClick={() => {
@@ -256,17 +331,6 @@ const Navbar = () => {
               >
                 <Briefcase size={18} />
                 <span>Freelance</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  handleQuizClick();
-                  toggleMobileMenu();
-                }}
-                className={`flex items-center space-x-2 py-2 ${getActiveStyle('/modules')}`}
-              >
-                <ClipboardCheck size={18} />
-                <span>Take Quiz</span>
               </button>
 
               <button
