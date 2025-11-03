@@ -1,7 +1,7 @@
 import React from 'react';
-import { FiClock, FiDollarSign, FiArrowRight, FiFileText, FiAward } from 'react-icons/fi';
+import { FiClock, FiDollarSign, FiArrowRight, FiFileText, FiAward, FiTrash2 } from 'react-icons/fi';
 
-const ProjectCard = ({ project, onViewProposals }) => {
+const ProjectCard = ({ project, onViewProposals, onDelete }) => {
   const { _id, title, description, price, deadline, category, proposals, requiredSkills } = project;
 
   const formatDeadline = (deadline) => {
@@ -43,13 +43,27 @@ const ProjectCard = ({ project, onViewProposals }) => {
             <FiAward className="mr-1.5 text-[#FC427B]" />
             <span className="text-xs font-medium text-white">{category || 'Premium Project'}</span>
           </div>
-          <div className={`px-4 py-1.5 rounded-full text-xs font-medium ${
-            deadlineInfo.isExpired 
-              ? 'bg-gradient-to-r from-red-500/10 to-red-500/30 text-white border border-red-500/20' 
-              : 'bg-gradient-to-r from-emerald-500/10 to-emerald-500/30 text-white border border-emerald-500/20'
-          } backdrop-blur-md`}>
-            <FiClock className="inline mr-1.5" />
-            {deadlineInfo.text}
+          <div className="flex items-center gap-2">
+            <div className={`px-4 py-1.5 rounded-full text-xs font-medium ${
+              deadlineInfo.isExpired
+                ? 'bg-gradient-to-r from-red-500/10 to-red-500/30 text-white border border-red-500/20'
+                : 'bg-gradient-to-r from-emerald-500/10 to-emerald-500/30 text-white border border-emerald-500/20'
+            } backdrop-blur-md`}>
+              <FiClock className="inline mr-1.5" />
+              {deadlineInfo.text}
+            </div>
+            {onDelete && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(_id);
+                }}
+                className="p-2 rounded-full bg-gradient-to-r from-red-500/10 to-red-500/30 backdrop-blur-md border border-red-500/20 text-red-400 hover:text-white hover:bg-red-500 transition-all duration-300"
+                title="Delete project"
+              >
+                <FiTrash2 size={14} />
+              </button>
+            )}
           </div>
         </div>
         

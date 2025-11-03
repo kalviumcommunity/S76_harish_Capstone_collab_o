@@ -75,9 +75,10 @@ const updateProject = async (req, res) => {
             return res.status(404).json({ message: 'Project not found.' });
         }
 
-        // if (project.createdBy.toString() !== req.user.id) {
-        //     return res.status(403).json({ message: 'Forbidden: You cannot modify this project.' });
-        // }
+        // Authorization check: Ensure the authenticated user is the owner
+        if (project.createdBy.toString() !== req.user.id.toString()) {
+            return res.status(403).json({ message: 'Forbidden: You cannot modify this project.' });
+        }
 
         const updatedProject = await Project.findByIdAndUpdate(
             req.params.id,
@@ -99,7 +100,8 @@ const updateProject = async (req, res) => {
 const deleteProject = async (req, res) => {
     try {
         const { id } = req.params;
-       console.log(id)
+        console.log('Delete request for project:', id, 'by user:', req.user?.id);
+
         // Validate project ID format
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid project ID format.' });
@@ -112,9 +114,13 @@ const deleteProject = async (req, res) => {
         }
 
         // Authorization check: Ensure the authenticated user is the owner
-        // if (project.createdBy.toString() !== req.user.id) {
-        //     return res.status(403).json({ message: 'Forbidden: You cannot delete this project.' });
-        // }
+        if (project.createdBy.toString() !== req.user.id.toString()) {
+            console.log('Authorization failed:', {
+                projectOwner: project.createdBy.toString(),
+                currentUser: req.user.id.toString()
+            });
+            return res.status(403).json({ message: 'Forbidden: You cannot delete this project.' });
+        }
 
         // Proceed with deletion
         await Project.findByIdAndDelete(id);

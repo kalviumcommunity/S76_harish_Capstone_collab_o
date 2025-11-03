@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ProjectCard from './ProjectCard';
 import { buildApiUrl } from '../../config/api';
 import Sidebar from './SideBar';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { FiPlus, FiGrid, FiList, FiFilter, FiCalendar } from 'react-icons/fi';
 
 const ClientDashboard = () => {
@@ -15,6 +16,8 @@ const ClientDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
 
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
@@ -59,6 +62,44 @@ const ClientDashboard = () => {
 
   const handleViewProposals = (projectId) => {
     navigate(`/projects/${projectId}`);
+  };
+
+  const handleDeleteProject = (projectId) => {
+    // Find the project to show its title in the dialog
+    const project = projects.find(p => p._id === projectId);
+    setProjectToDelete(project);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteProject = async () => {
+    if (!projectToDelete) return;
+
+    try {
+      const res = await fetch(buildApiUrl(`/projects/delete/${projectToDelete._id}`), {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          toast.error('You are not authorized to delete this project.');
+        } else {
+          throw new Error(data.message || 'Failed to delete project');
+        }
+        return;
+      }
+
+      toast.success('Project deleted successfully!');
+      // Refresh the projects list
+      fetchUserProjects();
+    } catch (error) {
+      toast.error(error.message || 'Failed to delete project. Please try again.');
+    }
   };
 
   const handleLogout = () => {
@@ -224,8 +265,8 @@ const ClientDashboard = () => {
               </button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' 
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+            <div className={viewMode === 'grid'
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               : "space-y-4"
             }>
               {projects.map((project) => (
@@ -233,6 +274,7 @@ const ClientDashboard = () => {
                   key={project._id}
                   project={project}
                   onViewProposals={handleViewProposals}
+                  onDelete={handleDeleteProject}
                   viewMode={viewMode}
                 />
               ))}
@@ -240,6 +282,25 @@ const ClientDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setProjectToDelete(null);
+        }}
+        onConfirm={confirmDeleteProject}
+        title="Delete Project"
+        message={
+          projectToDelete
+            ? `Are you sure you want to delete "${projectToDelete.title}"? This action cannot be undone and all associated data will be permanently removed.`
+            : 'Are you sure you want to delete this project?'
+        }
+        confirmText="Delete Project"
+        cancelText="Keep Project"
+        type="danger"
+      />
     </div>
   );
 };
