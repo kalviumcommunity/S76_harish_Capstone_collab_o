@@ -56,7 +56,7 @@ const getProjectById = async (req, res) => {
 // Get all projects
 const getAllProjects = async (req, res) => {
     try {
-        const projects = await Project.find().populate('createdBy', 'name email');
+        const projects = await Project.find().sort({ createdAt: -1 }).populate('createdBy', 'name email');
         if (projects.length === 0) {
             return res.status(404).json({ message: 'No projects found.' });
         }
@@ -141,7 +141,7 @@ const getProjectsByUser = async (req, res) => {
   }
 
   try {
-    const projects = await Project.find({ createdBy: userId }).populate("createdBy", "name email");
+    const projects = await Project.find({ createdBy: userId }).sort({ createdAt: -1 }).populate("createdBy", "name email");
 
     return res.status(200).send({
       message: "Projects fetched successfully",
