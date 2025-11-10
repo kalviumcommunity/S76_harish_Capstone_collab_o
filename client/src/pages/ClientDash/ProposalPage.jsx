@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FiCheckCircle, FiArrowLeft, FiUser, FiMessageSquare, FiCalendar, FiCheck, FiXCircle, FiClock, FiFile, FiPackage } from 'react-icons/fi';
-import DeliverableViewer from '../../components/DeliverableVeiwer';
+import { FiCheckCircle, FiArrowLeft, FiUser, FiMessageSquare, FiCalendar, FiCheck, FiXCircle, FiClock, FiFile, FiPackage, FiDownload, FiAlertCircle } from 'react-icons/fi';
+
 import { buildApiUrl } from '../../config/api';
 import { startRazorpayPayment } from '../../utils/payment';
 
@@ -435,6 +435,211 @@ const ProposalsPage = () => {
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+const DeliverableViewer = ({ proposal }) => {
+  const token = localStorage.getItem('token');
+  const [deliverables, setDeliverables] = useState([]);
+  const [deliveryMessage, setDeliveryMessage] = useState('');
+  const [deliveryStatus, setDeliveryStatus] = useState(proposal?.deliveryStatus || 'not_submitted');
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const statusCopy = {
+    not_submitted: {
+      label: 'Awaiting submission',
+      className: 'bg-gray-100 text-gray-600',
+    },
+    submitted: {
+      label: 'Submitted',
+      className: 'bg-blue-50 text-blue-600',
+    },
+    approved: {
+      label: 'Approved',
+      className: 'bg-green-50 text-green-600',
+    },
+    rejected: {
+      label: 'Changes requested',
+      className: 'bg-red-50 text-red-600',
+    },
+  };
+
+  const fetchDeliverables = useCallback(async () => {
+    if (!proposal?._id) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(buildApiUrl(`/api/proposals/${proposal._id}/deliverables`), {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load deliverables');
+
+      setDeliverables(data.deliverables || []);
+      setDeliveryMessage(data.deliveryMessage || '');
+      setDeliveryStatus(data.deliveryStatus || 'not_submitted');
+    } catch (error) {
+      toast.error(error.message || 'Unable to load deliverables');
+    } finally {
+      setLoading(false);
+    }
+  }, [proposal?._id, token]);
+
+  useEffect(() => {
+    setDeliverables([]);
+    setDeliveryMessage('');
+    setDeliveryStatus(proposal?.deliveryStatus || 'not_submitted');
+  }, [proposal?._id, proposal?.deliveryStatus]);
+
+  useEffect(() => {
+    fetchDeliverables();
+  }, [fetchDeliverables]);
+
+  const handleDownload = async (file) => {
+    if (!proposal?._id || !file?._id) return;
+    try {
+      const res = await fetch(buildApiUrl(`/api/proposals/${proposal._id}/deliverables/${file._id}`), {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to download file');
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', file.filename || 'deliverable');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(error.message || 'Unable to download deliverable');
+    }
+  };
+
+  const handleDecision = async (decision) => {
+    if (!proposal?._id) return;
+    setActionLoading(true);
+    try {
+      const res = await fetch(buildApiUrl(`/api/proposals/${proposal._id}/deliverables/${decision}`), {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.message || 'Unable to update deliverables');
+
+      toast.success(data.message || `Deliverables ${decision}`);
+      setDeliveryStatus(data.deliveryStatus || (decision === 'approve' ? 'approved' : 'rejected'));
+    } catch (error) {
+      toast.error(error.message || 'Unable to update deliverables');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  if (!proposal?._id) return null;
+
+  return (
+    <div className="border border-gray-100 rounded-2xl p-6 bg-white shadow-md">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <p className="text-sm text-gray-500">Deliverables status</p>
+          <span className={`mt-2 inline-flex px-3 py-1 rounded-full text-sm font-medium capitalize ${statusCopy[deliveryStatus]?.className || 'bg-gray-100 text-gray-600'}`}>
+            {statusCopy[deliveryStatus]?.label || deliveryStatus}
+          </span>
+        </div>
+
+        {deliveryStatus === 'submitted' && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleDecision('reject')}
+              disabled={actionLoading}
+              className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-medium transition-colors flex items-center disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <FiXCircle className="mr-2" />
+              Request Changes
+            </button>
+            <button
+              onClick={() => handleDecision('approve')}
+              disabled={actionLoading}
+              className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 font-medium transition-colors flex items-center disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <FiCheckCircle className="mr-2" />
+              Approve
+            </button>
+          </div>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center h-40">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FC427B]"></div>
+        </div>
+      ) : deliverables.length === 0 ? (
+        <div className="bg-gray-50 rounded-xl p-5 border border-dashed border-gray-200 text-center">
+          <FiAlertCircle className="mx-auto text-3xl text-gray-400 mb-2" />
+          <p className="text-gray-600 font-medium">No deliverables submitted yet.</p>
+          <p className="text-sm text-gray-500 mt-1">Once the freelancer uploads work, it will appear here.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-4">
+            {deliverables.map((file) => {
+              const sizeMb = file.size ? (file.size / (1024 * 1024)).toFixed(2) : '0.00';
+              return (
+                <div
+                  key={file._id || file.filename}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between bg-gray-50 border border-gray-100 rounded-xl p-4"
+                >
+                  <div className="flex items-center mb-3 sm:mb-0">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white mr-4">
+                      <FiFile />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">{file.filename}</p>
+                      <p className="text-sm text-gray-500">
+                        {sizeMb} MB &bull; {file.mimetype}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDownload(file)}
+                    className="inline-flex items-center px-4 py-2 bg-white text-[#FC427B] border border-[#FC427B] rounded-lg hover:bg-[#FC427B] hover:text-white transition-colors"
+                  >
+                    <FiDownload className="mr-2" />
+                    Download
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {deliveryMessage && (
+            <div className="mt-6 bg-white border border-gray-100 rounded-xl p-4">
+              <p className="text-sm text-gray-500 mb-2">Freelancer note</p>
+              <p className="text-gray-700 whitespace-pre-line">{deliveryMessage}</p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
