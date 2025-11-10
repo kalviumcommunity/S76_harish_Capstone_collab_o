@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const attachmentSchema = new mongoose.Schema({
   filename: String,
   path: String,
+  url: String,
   mimetype: String,
   size: Number,
   uploadedAt: { type: Date, default: Date.now }

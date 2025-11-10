@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 // import { buildApiUrl } from '../../config/api';
-import { FiSend, FiArrowLeft } from 'react-icons/fi';
+import { FiSend, FiArrowLeft, FiFile, FiDownload } from 'react-icons/fi';
 
 const ChatPage = () => {
   const { proposalId } = useParams();
@@ -14,20 +14,33 @@ const ChatPage = () => {
   const messagesRef = useRef(null);
   const [uploading, setUploading] = useState(false);
 
-  const username = localStorage.getItem('username') || 'Anonymous';
   const userId = localStorage.getItem('userId');
+  const token = localStorage.getItem('token');
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
   useEffect(() => {
     if (!proposalId) return;
 
+    if (!token) {
+      console.error('Missing authentication token. Redirecting to login.');
+      navigate('/login');
+      return;
+    }
+
     // fetch message history
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/messages/${proposalId}`);
+        const res = await fetch(`${API_BASE}/api/messages/${proposalId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (res.ok) {
           const data = await res.json();
           setMessages(data || []);
+        } else {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Failed to load messages');
         }
       } catch (e) {
         console.error('Failed to load messages', e);
@@ -38,6 +51,7 @@ const ChatPage = () => {
     const s = io(API_BASE, {
       transports: ['websocket'],
       withCredentials: true,
+      auth: { token },
     });
 
     setSocket(s);
@@ -52,6 +66,15 @@ const ChatPage = () => {
 
     s.on('chatMessage', (payload) => {
       setMessages((m) => [...m, payload]);
+    });
+
+    s.on('chatError', (payload) => {
+      console.error(payload?.message || 'Chat error');
+    });
+
+    s.on('connect_error', (err) => {
+      console.error('Socket connection failed', err?.message || err);
+      setConnected(false);
     });
 
     s.on('proposalAccepted', () => {
@@ -69,7 +92,7 @@ const ChatPage = () => {
         s.disconnect();
       }
     };
-  }, [proposalId, API_BASE, userId]);
+  }, [proposalId, API_BASE, userId, token, navigate]);
 
   useEffect(() => {
     // scroll to bottom
@@ -82,10 +105,8 @@ const ChatPage = () => {
     e.preventDefault();
     if (!text.trim() || !socket) return;
     const room = `proposal_${proposalId}`;
-    const payload = { room, message: text.trim(), sender: { id: userId, name: username } };
+    const payload = { room, message: text.trim() };
     socket.emit('chatMessage', payload);
-    // append locally (server will broadcast to others)
-    setMessages((m) => [...m, { message: payload.message, sender: payload.sender, createdAt: new Date() }]);
     setText('');
   };
 
@@ -95,10 +116,14 @@ const ChatPage = () => {
     try {
       const fd = new FormData();
       for (let i = 0; i < files.length; i++) fd.append('files', files[i]);
-      fd.append('senderId', userId || '');
-      fd.append('senderName', username || '');
 
-      const res = await fetch(`${API_BASE}/api/messages/${proposalId}/upload`, { method: 'POST', body: fd });
+      const res = await fetch(`${API_BASE}/api/messages/${proposalId}/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: fd
+      });
       if (!res.ok) {
         const txt = await res.text();
         throw new Error(txt || 'Upload failed');
@@ -174,7 +199,49 @@ const ChatPage = () => {
                           ? 'bg-gradient-to-br from-[#FC427B] to-[#e03a6d] text-white rounded-tr-sm'
                           : 'bg-white text-gray-800 border border-gray-200 rounded-tl-sm'
                       }`}>
-                        <div className="text-sm leading-relaxed break-words">{m.message}</div>
+                        {m.message && (
+                          <div className="text-sm leading-relaxed break-words">{m.message}</div>
+                        )}
+                        {m.attachments && m.attachments.length > 0 && (
+                          <div className="mt-2 space-y-2">
+                            {m.attachments.map((file, fileIdx) => {
+                              const isImage = file?.mimetype?.startsWith('image/');
+                              const relativeUrl = file?.url || file?.path || '';
+                              const fileUrl = relativeUrl.startsWith('http')
+                                ? relativeUrl
+                                : `${API_BASE}${relativeUrl}`;
+
+                              if (isImage) {
+                                return (
+                                  <div key={fileIdx} className="rounded-xl overflow-hidden border border-white/20">
+                                    <img
+                                      src={fileUrl}
+                                      alt={file?.filename || 'attachment'}
+                                      className="max-h-64 w-full object-cover"
+                                      loading="lazy"
+                                    />
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <a
+                                  key={fileIdx}
+                                  href={fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg transition ${
+                                    isOwn ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  <FiFile className="text-current" />
+                                  <span className="truncate max-w-[160px]">{file?.filename || 'Attachment'}</span>
+                                  <FiDownload className="text-current ml-auto" />
+                                </a>
+                              );
+                            })}
+                          </div>
+                        )}
                         <div className={`text-[10px] mt-1.5 ${isOwn ? 'text-pink-100' : 'text-gray-400'} text-right`}>
                           {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
