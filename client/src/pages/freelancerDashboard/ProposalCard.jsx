@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
-import { FiClock, FiCheckCircle, FiXCircle, FiCalendar, FiDollarSign, FiFileText, FiUser, FiMessageSquare, FiLink, FiUpload } from 'react-icons/fi';
-import DeliverableUpload from '../../components/DelivarableUpload';
+import React from 'react';
+import { 
+  FiClock, 
+  FiCheckCircle, 
+  FiXCircle, 
+  FiCalendar, 
+  FiDollarSign, 
+  FiFileText, 
+  FiUser, 
+  FiMessageSquare 
+} from 'react-icons/fi';
 
-const ProposalCard = ({ proposal, onViewProject, onConnect, onMessage, viewMode }) => {
-  const [showDeliverables, setShowDeliverables] = useState(false);
+const ProposalCard = ({ proposal, onViewProject, onMessage, viewMode }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -29,7 +36,6 @@ const ProposalCard = ({ proposal, onViewProject, onConnect, onMessage, viewMode 
     }
   };
 
-  // Format date to be more readable
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -39,14 +45,12 @@ const ProposalCard = ({ proposal, onViewProject, onConnect, onMessage, viewMode 
     });
   };
 
-  // Truncate text if too long
   const truncateText = (text, maxLength) => {
     if (!text) return '';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
-  
-
+  // GRID VIEW
   if (viewMode === 'grid') {
     return (
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
@@ -87,49 +91,27 @@ const ProposalCard = ({ proposal, onViewProject, onConnect, onMessage, viewMode 
             >
               View Project
             </button>
-            
-            {proposal.status === 'accepted' && (
-              <>
-                <div className="flex space-x-2">
-                  {proposal.connected ? (
-                    <button 
-                      onClick={() => onMessage(proposal._id)}
-                      className="flex-1 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors flex items-center justify-center"
-                    >
-                      <FiMessageSquare className="mr-2" size={14} />
-                      Message
-                    </button>
-                  ) : (
-                    <button 
-                      onClick={() => onConnect(proposal._id)}
-                      className="flex-1 py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg font-medium transition-colors flex items-center justify-center"
-                    >
-                      <FiLink className="mr-2" size={14} />
-                      Connect
-                    </button>
-                  )}
-                </div>
-                
-                {/* Add deliverable upload button/component */}
-                {showDeliverables ? (
-                  <DeliverableUpload proposal={proposal} />
-                ) : (
-                  <button 
-                    onClick={() => setShowDeliverables(true)}
-                    className="w-full py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg font-medium transition-colors flex items-center justify-center"
-                  >
-                    <FiUpload className="mr-2" size={14} />
-                    Upload Deliverables
-                  </button>
-                )}
-              </>
-            )}
+
+            <button 
+              onClick={() => proposal.status === 'accepted' && onMessage(proposal._id)}
+              disabled={proposal.status !== 'accepted'}
+              className={`w-full py-2 rounded-lg font-medium transition-colors flex items-center justify-center ${
+                proposal.status === 'accepted'
+                  ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <FiMessageSquare className="mr-2" size={14} />
+              Message
+            </button>
           </div>
         </div>
       </div>
     );
-  } else {
-    // List view
+  } 
+  
+  // LIST VIEW
+  else {
     return (
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -178,40 +160,22 @@ const ProposalCard = ({ proposal, onViewProject, onConnect, onMessage, viewMode 
             >
               View Project
             </button>
-            
-            {proposal.status === 'accepted' && (
-              proposal.connected ? (
-                <button 
-                  onClick={() => onMessage(proposal._id)}
-                  className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center"
-                >
-                  <FiMessageSquare className="mr-2" size={14} />
-                  Message
-                </button>
-              ) : (
-                <button 
-                  onClick={() => onConnect(proposal._id)}
-                  className="px-4 py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center"
-                >
-                  <FiLink className="mr-2" size={14} />
-                  Connect
-                </button>
-              )
-            )}
-            
-            {proposal.status === 'accepted' && (
-              <button 
-                onClick={() => setShowDeliverables(!showDeliverables)}
-                className="px-4 py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center"
-              >
-                <FiUpload className="mr-2" size={14} />
-                {showDeliverables ? 'Hide Upload' : 'Upload Deliverables'}
-              </button>
-            )}
+
+            <button 
+              onClick={() => proposal.status === 'accepted' && onMessage(proposal._id)}
+              disabled={proposal.status !== 'accepted'}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center ${
+                proposal.status === 'accepted'
+                  ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <FiMessageSquare className="mr-2" size={14} />
+              Message
+            </button>
           </div>
         </div>
 
-        {/* Skills tags */}
         {proposal.skills && proposal.skills.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
             {proposal.skills.map((skill, index) => (
@@ -219,13 +183,6 @@ const ProposalCard = ({ proposal, onViewProject, onConnect, onMessage, viewMode 
                 {skill}
               </span>
             ))}
-          </div>
-        )}
-        
-        {/* Deliverable upload section */}
-        {proposal.status === 'accepted' && showDeliverables && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <DeliverableUpload proposal={proposal} />
           </div>
         )}
       </div>
