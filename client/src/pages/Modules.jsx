@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import axios from "axios";
 import { BookOpenIcon, AcademicCapIcon, ClockIcon, CheckCircleIcon, XCircleIcon, TrophyIcon, StarIcon, ShieldCheckIcon, CameraIcon, MicrophoneIcon } from '@heroicons/react/24/outline';
 import { AuthContext } from '../AuthContext';
@@ -35,6 +35,25 @@ export default function SkillAssessment() {
   const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const resetAssessment = useCallback((message = '') => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    setStep("setup");
+    setQuestions([]);
+    setAnswers({});
+    setCurrent(0);
+    setError(message);
+    setAssessmentSaved(false);
+    setTimeRemaining(0);
+    setChecksCompleted({
+      camera: false,
+      microphone: false,
+      fullscreen: false
+    });
+    setIsFullscreen(false);
+  }, []);
+
   // Timer effect
   useEffect(() => {
     if (step === "quiz" && timeRemaining > 0) {
@@ -59,13 +78,15 @@ export default function SkillAssessment() {
       
       // If user exits fullscreen during quiz, show warning
       if (!isCurrentlyFullscreen && step === "quiz") {
-        alert("Warning: Please stay in fullscreen mode during the assessment!");
+        alert("You exited fullscreen. The assessment has been terminated.");
+        resetAssessment("Assessment terminated for leaving fullscreen.");
+        return;
       }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, [step]);
+  }, [step, resetAssessment]);
 
   // Check if user is authenticated
   if (!isAuthenticated) {
@@ -108,7 +129,8 @@ export default function SkillAssessment() {
       stream.getTracks().forEach(track => track.stop());
       setChecksCompleted(prev => ({ ...prev, camera: true }));
     } catch (err) {
-      alert("Camera access denied. Please allow camera access to proceed.");
+      alert("Camera access denied. Exiting the assessment.");
+      resetAssessment("Assessment terminated due to missing camera access.");
     }
   };
 
@@ -118,7 +140,8 @@ export default function SkillAssessment() {
       stream.getTracks().forEach(track => track.stop());
       setChecksCompleted(prev => ({ ...prev, microphone: true }));
     } catch (err) {
-      alert("Microphone access denied. Please allow microphone access to proceed.");
+      alert("Microphone access denied. Exiting the assessment.");
+      resetAssessment("Assessment terminated due to missing microphone access.");
     }
   };
 
@@ -127,7 +150,8 @@ export default function SkillAssessment() {
       await document.documentElement.requestFullscreen();
       setChecksCompleted(prev => ({ ...prev, fullscreen: true }));
     } catch (err) {
-      alert("Failed to enter fullscreen mode. Please try again.");
+      alert("Failed to enter fullscreen mode. Exiting the assessment.");
+      resetAssessment("Assessment terminated because fullscreen mode could not be enabled.");
     }
   };
 
@@ -187,18 +211,7 @@ export default function SkillAssessment() {
   };
 
   const handleRestart = () => {
-    setStep("setup");
-    setQuestions([]);
-    setAnswers({});
-    setCurrent(0);
-    setError("");
-    setAssessmentSaved(false);
-    setTimeRemaining(0);
-    setChecksCompleted({
-      camera: false,
-      microphone: false,
-      fullscreen: false
-    });
+    resetAssessment("");
   };
 
   const saveAssessment = async () => {
