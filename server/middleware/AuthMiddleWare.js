@@ -11,12 +11,16 @@ const authenticate = async (req, res, next) => {
         const token = authHeader.replace('Bearer ', '');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const user = await User.findById(decoded.id).select('_id email');
+        const user = await User.findById(decoded.id).select('_id email username');
         if (!user) {
             return res.status(401).json({ message: 'Unauthorized: User not found.' });
         }
 
-        req.user = { id: user._id, email: user.email }; 
+        req.user = {
+            id: user._id.toString(),
+            email: user.email,
+            username: user.username || user.email
+        }; 
         next();
     } catch (err) {
         console.error('Authentication error:', err);
