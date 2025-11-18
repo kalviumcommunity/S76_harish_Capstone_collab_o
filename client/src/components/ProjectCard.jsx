@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { FiClock, FiUsers, FiDollarSign, FiBookmark, FiCheckCircle, FiArrowRight, FiTag, FiCalendar } from 'react-icons/fi';
-import { motion } from 'framer-motion'; 
-import { buildApiUrl } from '../config/api';
+import { useNavigate } from 'react-router-dom';
+import { FiClock, FiUsers, FiDollarSign, FiBookmark, FiCheckCircle, FiArrowRight, FiTag, FiCalendar } from 'react-icons/fi'; 
 
 const ProjectCard = ({ project }) => {
-  const freelancerId = localStorage.getItem('userId');
+  const navigate = useNavigate();
 
   const {
     title = '',
@@ -18,56 +17,20 @@ const ProjectCard = ({ project }) => {
     proposals = 0
   } = project;
 
-  const [message, setMessage] = useState('');
   const [isApplied, setIsApplied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Format deadline
   let durationText = '';
-  let isExpired = false;
   if (deadline) {
     const daysLeft = Math.max(0, Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24)));
-    isExpired = daysLeft === 0;
     durationText = daysLeft > 0 ? `${daysLeft} days left` : 'Deadline passed';
   }
 
   const isCompleted = status === 'completed';
 
-  const handleMessageChange = (e) => setMessage(e.target.value);
-
-  const handleApplyNow = async () => {
-    if (isCompleted || isApplied) return;
-
-    if (!message) {
-      alert('Please write a message before applying!');
-      return;
-    }
-
-    const proposalData = {
-      freelancerId,
-      projectId: _id,
-      message: message,
-    };
-
-    try {
-      const response = await fetch(buildApiUrl('/api/proposals'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(proposalData),
-      });
-
-      if (response.ok) {
-        setIsApplied(true);
-        alert(`Your proposal message: "${message}"`);
-      } else {
-        alert('Failed to submit the proposal!');
-      }
-    } catch (err) {
-      console.error('Error submitting proposal:', err);
-      alert('There was an error. Please try again.');
-    }
+  const handleApplyClick = () => {
+    navigate(`/proposal/submit/${_id}`);
   };
 
   const toggleExpand = () => {
@@ -75,12 +38,7 @@ const ProjectCard = ({ project }) => {
   };
 
   return (
-    <motion.div 
-      className="w-full"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="w-full group relative">
       <div className={`bg-white rounded-lg overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all ${isCompleted ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-[#FC427B]'}`}>
         <div className="p-6">
           {/* Header with Title and Status */}
@@ -176,51 +134,20 @@ const ProjectCard = ({ project }) => {
               </div>
             </div>
           </div>
-          
-          {/* Apply Form */}
-          {!isCompleted && (
-            <div className={`mt-6 pt-6 border-t border-gray-100 ${isApplied ? 'opacity-70' : ''}`}>
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                <div className="md:col-span-9">
-                  <label htmlFor="proposalMessage" className="block text-sm font-medium text-gray-700 mb-1">
-                    Your proposal message
-                  </label>
-                  <textarea 
-                    id="proposalMessage"
-                    className="w-full p-3 bg-white rounded-lg border border-gray-200 focus:ring-[#FC427B] focus:border-[#FC427B] transition-colors"
-                    placeholder="Describe why you're a good fit for this project..."
-                    value={message}
-                    onChange={handleMessageChange}
-                    rows={3}
-                    disabled={isApplied}
-                  />
-                </div>
-                <div className="md:col-span-3 flex justify-end">
-                  <button
-                    disabled={isCompleted || isApplied}
-                    onClick={handleApplyNow}
-                    className={`px-5 py-3 rounded-lg font-medium transition-all flex items-center gap-2
-                      ${isCompleted || isApplied
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                        : 'bg-[#FC427B] text-white hover:bg-[#e03a6d] shadow-sm hover:shadow-md'}`}
-                  >
-                    {isCompleted ? 'Closed' : isApplied ? 'Applied' : 'Submit Proposal'}
-                    {!isCompleted && !isApplied && <FiArrowRight size={16} />}
-                  </button>
-                </div>
-              </div>
-              
-              {isApplied && (
-                <p className="mt-3 text-green-600 text-sm flex items-center">
-                  <FiCheckCircle className="mr-2" />
-                  Your proposal has been successfully submitted!
-                </p>
-              )}
-            </div>
-          )}
         </div>
       </div>
-    </motion.div>
+      
+      {/* Hover Apply Button */}
+      {!isCompleted && !isApplied && (
+        <button
+          onClick={handleApplyClick}
+          className="absolute top-4 right-4 px-6 py-3 bg-gradient-to-r from-[#FC427B] to-[#e03a6d] text-white rounded-lg font-semibold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 z-10"
+        >
+          <span>Apply Now</span>
+          <FiArrowRight size={18} />
+        </button>
+      )}
+    </div>
   );
 };
 
