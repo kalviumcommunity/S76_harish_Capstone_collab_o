@@ -1,5 +1,20 @@
-// API configuration based on environment
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const LOCAL_API_URL = 'http://localhost:5000';
+const PROD_API_URL = 'https://s76-harish-capstone-collab-o.onrender.com';
+
+const resolveDefaultBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    // Use localhost backend only when running on localhost
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') {
+      return LOCAL_API_URL;
+    }
+    // For any deployed site (Netlify, Vercel, etc.), use production backend
+    return PROD_API_URL;
+  }
+  return PROD_API_URL;
+};
+
+export const API_BASE_URL = resolveDefaultBaseUrl();
 
 export const apiConfig = {
   baseURL: API_BASE_URL,
