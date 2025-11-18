@@ -16,6 +16,7 @@ const projectRoutes = require('./routes/routes');
 const authRoutes = require('./routes/routes');
 const proposalRoutes = require('./routes/ProposalRoutes');
 const aiProjectRoutes = require('./routes/aiProjectRoutes');
+const aiProposalRoutes = require('./routes/aiProposalRoutes');
 // const messagingRoutes = require('./controller/messaging');
 
 const quizAIRoutes = require('./routes/QuizAiRoutes');
@@ -148,6 +149,7 @@ app.use('/projects', projectRoutes);
 app.use('/auth', authRoutes);
 app.use('/api/ai-course', courseAIRoutes);
 app.use('/api/ai-project', aiProjectRoutes);
+app.use('/api/ai-proposal', aiProposalRoutes);
 app.use('/api/proposals', proposalRoutes);
 // messages
 app.use('/api/messages', require('./routes/messageRoutes'));

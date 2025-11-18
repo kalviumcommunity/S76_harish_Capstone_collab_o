@@ -9,6 +9,7 @@ import LearningUnit from './pages/LearningUint';
 // import Quiz from './pages/Quiz';
 import ClientForm from './pages/ClientFrom';
 import CourseCreation from './pages/CourseCreation';
+import ProposalSubmission from './pages/ProposalSubmission';
 
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
@@ -40,6 +41,7 @@ function App() {
             {/* <Route path="/quiz" element={<Quiz/>} /> */}
             <Route path="/clientForm" element={<ClientForm/>} />
             <Route path="/clientForm/:id" element={<ClientForm/>} />
+            <Route path="/proposal/submit/:projectId" element={<ProposalSubmission/>} />
             <Route path="/clientDashBoard" element={<ClientDashboard/>} />
             <Route path="/courseCreation" element={<CourseCreation/>} />
             <Route path="/profile" element={<Profile/>} />
