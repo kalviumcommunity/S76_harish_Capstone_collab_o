@@ -15,6 +15,7 @@ const courseAIRoutes = require('./routes/courseRoutes');
 const projectRoutes = require('./routes/routes');
 const authRoutes = require('./routes/routes');
 const proposalRoutes = require('./routes/ProposalRoutes');
+const aiProjectRoutes = require('./routes/aiProjectRoutes');
 // const messagingRoutes = require('./controller/messaging');
 
 const quizAIRoutes = require('./routes/QuizAiRoutes');
@@ -146,6 +147,7 @@ connectDB();
 app.use('/projects', projectRoutes);
 app.use('/auth', authRoutes);
 app.use('/api/ai-course', courseAIRoutes);
+app.use('/api/ai-project', aiProjectRoutes);
 app.use('/api/proposals', proposalRoutes);
 // messages
 app.use('/api/messages', require('./routes/messageRoutes'));

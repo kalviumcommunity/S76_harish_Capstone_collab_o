@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import AIProjectGenerator from '../components/AIProjectGenerator';
 import { FiCalendar, FiDollarSign, FiUser, FiClock, FiList, FiTag, FiImage, FiFileText } from 'react-icons/fi';
 import { buildApiUrl } from '../config/api';
 
@@ -25,6 +26,25 @@ const ClientForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
+
+  const handleAIProjectGenerated = (aiData) => {
+    // Populate form with AI-generated data
+    setFormData({
+      title: aiData.title || '',
+      description: aiData.detailedDescription || '',
+      price: aiData.budget?.max || '',
+      category: aiData.category || '',
+      image: '',
+      requiredSkills: aiData.skillsRequired ? aiData.skillsRequired.join(', ') : '',
+      deadline: '',
+    });
+
+    // Show success message
+    setSuccessMessage('✨ AI has generated your project details! Review and adjust as needed.');
+    
+    // Clear success message after 5 seconds
+    setTimeout(() => setSuccessMessage(''), 5000);
+  };
 
   useEffect(() => {
     if (id) {
@@ -217,6 +237,23 @@ const ClientForm = () => {
                     <div className="ml-3">
                       <p className="text-sm text-red-700">{errorMessage}</p>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* AI Project Generator - Only show in create mode */}
+              {!isEditMode && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-lg">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800 mb-1">
+                        ✨ Not sure how to describe your project?
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Let AI help you create a complete project specification from a simple idea!
+                      </p>
+                    </div>
+                    <AIProjectGenerator onProjectGenerated={handleAIProjectGenerated} />
                   </div>
                 </div>
               )}
