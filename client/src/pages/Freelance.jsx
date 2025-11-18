@@ -26,16 +26,10 @@ const Freelance = () => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          console.error('No token found. Please log in.');
-          throw new Error('Unauthorized: No token provided.');
-        }
-
+        // No authentication required to view projects
         const res = await fetch(buildApiUrl('/projects'), {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });

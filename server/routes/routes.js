@@ -17,10 +17,10 @@ router.post('/login', authController.login);
 
 router.post('/create', authenticate, createProject);
 router.put('/update/:id', authenticate, updateProject);
-router.get('/', authenticate, getAllProjects); // Get all projects (secured)
+router.get('/', getAllProjects); // Get all projects (public - no auth required)
 router.delete('/delete/:id', authenticate, deleteProject); // Delete project (secured with owner check)
-router.get('/user/:userId', getProjectsByUser);// Get projects by user (secured)
+router.get('/user/:userId', getProjectsByUser);// Get projects by user (public)
 
-router.get('/:id', getProjectById);
+router.get('/:id', getProjectById); // Get single project (public)
 
 module.exports = router;
