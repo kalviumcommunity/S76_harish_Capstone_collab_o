@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-// import { buildApiUrl } from '../../config/api';
+import { API_BASE_URL, buildApiUrl } from '../../config/api';
 import { FiSend, FiArrowLeft, FiFile, FiDownload } from 'react-icons/fi';
 
 const ChatPage = () => {
@@ -16,7 +16,7 @@ const ChatPage = () => {
 
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE = API_BASE_URL;
 
   useEffect(() => {
     if (!proposalId) return;
@@ -30,7 +30,7 @@ const ChatPage = () => {
     // fetch message history
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/messages/${proposalId}`, {
+        const res = await fetch(buildApiUrl(`/api/messages/${proposalId}`), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -117,7 +117,7 @@ const ChatPage = () => {
       const fd = new FormData();
       for (let i = 0; i < files.length; i++) fd.append('files', files[i]);
 
-      const res = await fetch(`${API_BASE}/api/messages/${proposalId}/upload`, {
+      const res = await fetch(buildApiUrl(`/api/messages/${proposalId}/upload`), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

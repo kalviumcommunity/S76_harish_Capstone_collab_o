@@ -3,6 +3,7 @@ import axios from "axios";
 import { BookOpenIcon, AcademicCapIcon, ClockIcon, CheckCircleIcon, XCircleIcon, TrophyIcon, StarIcon, ShieldCheckIcon, CameraIcon, MicrophoneIcon } from '@heroicons/react/24/outline';
 import { AuthContext } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { buildApiUrl } from '../config/api';
 
 const difficulties = ["Beginner", "Intermediate", "Advanced"];
 
@@ -169,7 +170,7 @@ export default function SkillAssessment() {
     setAssessmentSaved(false);
     
     try {
-      const res = await axios.post("http://localhost:5000/api/ai-quiz/generate", {
+      const res = await axios.post(buildApiUrl("/api/ai-quiz/generate"), {
         topic,
         numQuestions,
         difficulty,
@@ -219,7 +220,7 @@ export default function SkillAssessment() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        "http://localhost:5000/api/ai-quiz/save-assessment",
+        buildApiUrl("/api/ai-quiz/save-assessment"),
         {
           skill: topic,
           score: score,

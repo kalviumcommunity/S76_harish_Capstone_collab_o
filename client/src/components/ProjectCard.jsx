@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiClock, FiUsers, FiDollarSign, FiBookmark, FiCheckCircle, FiArrowRight, FiTag, FiCalendar } from 'react-icons/fi';
 import { motion } from 'framer-motion'; 
+import { buildApiUrl } from '../config/api';
 
 const ProjectCard = ({ project }) => {
   const freelancerId = localStorage.getItem('userId');
@@ -49,7 +50,7 @@ const ProjectCard = ({ project }) => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/proposals', {
+      const response = await fetch(buildApiUrl('/api/proposals'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

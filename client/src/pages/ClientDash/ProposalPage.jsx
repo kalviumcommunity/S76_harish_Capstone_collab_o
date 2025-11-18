@@ -4,7 +4,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FiCheckCircle, FiArrowLeft, FiUser, FiMessageSquare, FiCalendar, FiCheck, FiXCircle, FiClock, FiFile, FiPackage, FiDownload, FiAlertCircle } from 'react-icons/fi';
 
-import { buildApiUrl } from '../../config/api';
+import { buildApiUrl, API_BASE_URL } from '../../config/api';
 import { startRazorpayPayment } from '../../utils/payment';
 
 const ProposalsPage = () => {
@@ -114,7 +114,7 @@ const ProposalsPage = () => {
   // Check if any proposal is accepted
   const hasAcceptedProposal = proposals.some(p => p.status === 'accepted');
   const acceptedProposal = proposals.find(p => p.status === 'accepted');
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  const apiBase = API_BASE_URL;
 
   const handlePayNow = async () => {
     if (!acceptedProposal) return;
