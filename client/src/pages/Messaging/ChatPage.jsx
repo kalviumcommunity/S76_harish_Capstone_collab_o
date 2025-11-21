@@ -13,6 +13,7 @@ const ChatPage = () => {
   const [connected, setConnected] = useState(false);
   const messagesRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [authError, setAuthError] = useState(false);
 
   const userId = localStorage.getItem('userId');
   const token = localStorage.getItem('token');
@@ -48,41 +49,76 @@ const ChatPage = () => {
     })();
 
     // connect socket
+    console.log('🔌 Connecting to socket with:', { API_BASE, token: token ? 'Present' : 'Missing', userId });
+    
     const s = io(API_BASE, {
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'], // Add polling as fallback
       withCredentials: true,
       auth: { token },
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
     });
 
     setSocket(s);
 
     s.on('connect', () => {
+      console.log('✅ Socket connected successfully', s.id);
       setConnected(true);
       // join proposal room and personal user room
       const room = `proposal_${proposalId}`;
+      console.log('📨 Emitting joinRoom for:', room);
       s.emit('joinRoom', { room });
-      if (userId) s.emit('joinRoom', { room: `user_${userId}` });
+      if (userId) {
+        console.log('📨 Emitting joinRoom for user:', `user_${userId}`);
+        s.emit('joinRoom', { room: `user_${userId}` });
+      }
     });
 
     s.on('chatMessage', (payload) => {
+      console.log('📩 Received chatMessage:', payload);
       setMessages((m) => [...m, payload]);
     });
 
     s.on('chatError', (payload) => {
-      console.error(payload?.message || 'Chat error');
+      console.error('❌ Chat error:', payload?.message || 'Chat error');
+      alert(`Chat Error: ${payload?.message || 'Unknown error'}`);
     });
 
     s.on('connect_error', (err) => {
-      console.error('Socket connection failed', err?.message || err);
+      console.error('❌ Socket connection failed:', err?.message || err);
+      setConnected(false);
+      
+      // Check if it's an authentication error
+      if (err?.message?.includes('Unauthorized') || err?.message?.includes('expired') || err?.message?.includes('Invalid token')) {
+        setAuthError(true);
+        alert('⚠️ Your session has expired. Please log out and log back in to continue messaging.');
+      }
+    });
+
+    s.on('disconnect', (reason) => {
+      console.log('🔌 Socket disconnected:', reason);
       setConnected(false);
     });
 
+    s.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
+      setConnected(true);
+    });
+
     s.on('proposalAccepted', () => {
+      console.log('🎉 Proposal accepted event received');
       // show system notice
       setMessages((m) => [...m, { sender: 'system', message: 'Proposal was accepted', createdAt: new Date() }]);
     });
 
-    s.on('disconnect', () => setConnected(false));
+    s.on('userJoined', (data) => {
+      console.log('👋 User joined:', data);
+    });
+
+    s.on('userLeft', (data) => {
+      console.log('👋 User left:', data);
+    });
 
     return () => {
       if (s) {
@@ -103,9 +139,13 @@ const ChatPage = () => {
 
   const handleSend = (e) => {
     e.preventDefault();
-    if (!text.trim() || !socket) return;
+    if (!text.trim() || !socket) {
+      console.log('⚠️ Cannot send: text or socket missing', { text: text.trim(), socket: !!socket });
+      return;
+    }
     const room = `proposal_${proposalId}`;
     const payload = { room, message: text.trim() };
+    console.log('📤 Sending message:', payload);
     socket.emit('chatMessage', payload);
     setText('');
   };
@@ -139,6 +179,29 @@ const ChatPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 p-4 sm:p-6">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+        {/* Auth Error Banner */}
+        {authError && (
+          <div className="bg-red-50 border-b-2 border-red-500 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span className="text-red-800 font-medium text-sm">Your session has expired. Please log out and log back in.</span>
+              </div>
+              <button
+                onClick={() => {
+                  localStorage.clear();
+                  navigate('/login');
+                }}
+                className="px-4 py-1 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        )}
+        
         {/* Header with glassmorphism effect */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b bg-gradient-to-r from-white to-gray-50 backdrop-blur-sm">
           <div className="flex items-center gap-3 sm:gap-4">
