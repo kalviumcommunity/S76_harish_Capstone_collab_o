@@ -20,6 +20,7 @@ import ClientDashboard from './pages/ClientDash/ClientDashboard';
 
 import ProposalsPage from './pages/ClientDash/ProposalPage';
 import ChatPage from './pages/Messaging/ChatPage';
+import ContractView from './pages/ContractView';
 // import MessagingPage from './pages/MessagingPage';  
 // import Message from  './pages/freelancerDashboard/Message'
 
@@ -49,6 +50,7 @@ function App() {
             <Route path="/projects/:projectId/" element={<ProposalsPage />} />
             <Route path="/freelancerDashboard" element={<FreelancerDash />} />
             <Route path="/messages/chat/:proposalId" element={<ChatPage />} />
+            <Route path="/contract/:contractId" element={<ContractView />} />
              {/* <Route path="/messages" element={<Message />} /> */}
             
           </Routes>

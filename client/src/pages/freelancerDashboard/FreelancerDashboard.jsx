@@ -47,6 +47,9 @@ const FreelancerDashboard = () => {
         clientId: proposal.projectId?.createdBy?._id || '',
       }));
       
+      // Sort by createdAt descending (newest first)
+      proposalsWithProjectData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      
       setProposals(proposalsWithProjectData);
     } catch (error) {
       console.error("Error fetching proposals:", error);

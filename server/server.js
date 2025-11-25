@@ -55,6 +55,10 @@ app.use('/api/proposals', proposalRoutes);
 app.use('/api/messages', require('./routes/messageRoutes'));
 // payments
 app.use('/api/payments', require('./routes/paymentRoutes'));
+// contracts
+app.use('/api/contracts', require('./routes/contractRoutes'));
+// paypal
+app.use('/api/paypal', require('./routes/paypalRoutes'));
 // app.use('/api/messaging', messagingRoutes);
 
 
