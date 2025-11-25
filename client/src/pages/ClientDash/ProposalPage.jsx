@@ -6,6 +6,7 @@ import { FiCheckCircle, FiArrowLeft, FiUser, FiMessageSquare, FiCalendar, FiChec
 
 import { buildApiUrl, API_BASE_URL } from '../../config/api';
 import { startRazorpayPayment } from '../../utils/payment';
+import ContractButton from '../../components/ContractButton';
 
 const ProposalsPage = () => {
   const { projectId } = useParams();
@@ -203,12 +204,6 @@ const ProposalsPage = () => {
               </div>
               <div className="ml-auto flex gap-2">
                 <button 
-                  onClick={handlePayNow}
-                  className="px-4 py-2 bg-gradient-to-r from-[#FC427B] to-[#e03a6d] text-white rounded-lg font-medium transition-colors"
-                >
-                  Pay Now
-                </button>
-                <button 
                   onClick={() => navigate(`/messages/chat/${acceptedProposal?._id}`)}
                   className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors flex items-center"
                 >
@@ -216,6 +211,11 @@ const ProposalsPage = () => {
                   Message Freelancer
                 </button>
               </div>
+            </div>
+            
+            {/* Contract Generation Button */}
+            <div className="mb-6">
+              <ContractButton proposal={acceptedProposal} onContractGenerated={fetchProposals} />
             </div>
             
             {/* Deliverables viewer component */}
