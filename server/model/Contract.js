@@ -62,7 +62,24 @@ const contractSchema = new mongoose.Schema({
     status: { type: String, enum: ['pending', 'in_progress', 'completed', 'paid'], default: 'pending' },
     completedAt: Date,
     paidAt: Date,
-    paymentId: String
+    paymentId: String,
+    deliverables: [{
+      filename: String,
+      path: String,
+      size: Number,
+      uploadedAt: Date
+    }],
+    notes: [{
+      text: String,
+      createdAt: Date,
+      createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    }],
+    disputed: { type: Boolean, default: false },
+    disputeReason: String,
+    disputedAt: Date,
+    refunded: { type: Boolean, default: false },
+    refundId: String,
+    refundedAt: Date
   }],
   
   // Payment tracking
