@@ -176,4 +176,93 @@ router.get('/config', (req, res) => {
   });
 });
 
+/**
+ * Refund a payment
+ */
+router.post('/refund', authenticate, async (req, res) => {
+  try {
+    const { captureId, amount, reason } = req.body;
+    
+    if (!captureId) {
+      return res.status(400).json({ error: 'Capture ID is required' });
+    }
+    
+    const accessToken = await getPayPalAccessToken();
+    
+    const refundData = {
+      amount: amount ? {
+        value: amount.toFixed(2),
+        currency_code: 'USD'
+      } : undefined,
+      note_to_payer: reason || 'Refund for contract milestone'
+    };
+    
+    const response = await fetch(`${PAYPAL_API_BASE}/v2/payments/captures/${captureId}/refund`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(refundData)
+    });
+    
+    const refund = await response.json();
+    
+    if (!response.ok) {
+      console.error('PayPal refund failed:', refund);
+      return res.status(500).json({ error: 'Failed to process refund', details: refund });
+    }
+    
+    res.json({
+      success: true,
+      refundId: refund.id,
+      status: refund.status,
+      amount: refund.amount.value,
+      currency: refund.amount.currency_code,
+      createTime: refund.create_time
+    });
+  } catch (error) {
+    console.error('PayPal refund error:', error);
+    res.status(500).json({ error: error.message || 'Failed to process refund' });
+  }
+});
+
+/**
+ * Verify webhook signature (for production use)
+ */
+router.post('/webhook', async (req, res) => {
+  try {
+    const webhookEvent = req.body;
+    
+    // Log webhook events for debugging
+    console.log('PayPal Webhook Event:', webhookEvent.event_type);
+    
+    // Handle different webhook events
+    switch (webhookEvent.event_type) {
+      case 'PAYMENT.CAPTURE.COMPLETED':
+        console.log('Payment captured:', webhookEvent.resource.id);
+        // Update contract payment status if needed
+        break;
+        
+      case 'PAYMENT.CAPTURE.DENIED':
+        console.log('Payment denied:', webhookEvent.resource.id);
+        // Handle failed payment
+        break;
+        
+      case 'PAYMENT.CAPTURE.REFUNDED':
+        console.log('Payment refunded:', webhookEvent.resource.id);
+        // Update contract refund status
+        break;
+        
+      default:
+        console.log('Unhandled webhook event:', webhookEvent.event_type);
+    }
+    
+    res.status(200).json({ received: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Webhook processing failed' });
+  }
+});
+
 module.exports = router;

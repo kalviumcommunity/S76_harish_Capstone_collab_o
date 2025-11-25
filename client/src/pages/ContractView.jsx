@@ -12,6 +12,9 @@ const ContractView = () => {
   const [signature, setSignature] = useState('');
   const [signing, setSigning] = useState(false);
   const [paypalClientId, setPaypalClientId] = useState('');
+  const [uploadingFiles, setUploadingFiles] = useState({});
+  const [selectedFiles, setSelectedFiles] = useState({});
+  const [deliveryNotes, setDeliveryNotes] = useState({});
   const token = localStorage.getItem('token');
   
   // Get user data from localStorage (stored as separate items, not JSON)
@@ -86,6 +89,75 @@ const ContractView = () => {
       fetchContract();
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to complete milestone');
+    }
+  };
+
+  const handleFileSelect = (milestoneIndex, files) => {
+    setSelectedFiles(prev => ({ ...prev, [milestoneIndex]: files }));
+  };
+
+  const handleUploadDeliverables = async (milestoneIndex) => {
+    const files = selectedFiles[milestoneIndex];
+    if (!files || files.length === 0) {
+      alert('Please select files to upload');
+      return;
+    }
+
+    try {
+      setUploadingFiles(prev => ({ ...prev, [milestoneIndex]: true }));
+      
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        formData.append('deliverables', file);
+      });
+      
+      if (deliveryNotes[milestoneIndex]) {
+        formData.append('notes', deliveryNotes[milestoneIndex]);
+      }
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/contracts/${contractId}/milestone/${milestoneIndex}/deliverables`,
+        formData,
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          } 
+        }
+      );
+      
+      alert('Deliverables uploaded successfully!');
+      setSelectedFiles(prev => ({ ...prev, [milestoneIndex]: null }));
+      setDeliveryNotes(prev => ({ ...prev, [milestoneIndex]: '' }));
+      fetchContract();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to upload deliverables');
+    } finally {
+      setUploadingFiles(prev => ({ ...prev, [milestoneIndex]: false }));
+    }
+  };
+
+  const handleDownloadDeliverable = async (milestoneIndex, fileIndex, filename) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/contracts/${contractId}/milestone/${milestoneIndex}/deliverable/${fileIndex}`,
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob'
+        }
+      );
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert('Failed to download file');
     }
   };
 
@@ -313,10 +385,10 @@ const ContractView = () => {
       {fullyExecuted && contract.milestones.length > 0 && (
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-bold mb-4">Project Milestones</h2>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {contract.milestones.map((milestone, idx) => (
-              <div key={idx} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start">
+              <div key={idx} className="border rounded-lg p-5">
+                <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">{milestone.description}</h3>
                     <p className="text-sm text-gray-600">
@@ -336,20 +408,83 @@ const ContractView = () => {
                   </span>
                 </div>
 
-                <div className="mt-4 flex gap-2">
-                  {/* Freelancer actions */}
+                {/* Deliverables Section */}
+                {milestone.deliverables && milestone.deliverables.length > 0 && (
+                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Uploaded Deliverables:</h4>
+                    <div className="space-y-2">
+                      {milestone.deliverables.map((deliverable, dIdx) => (
+                        <div key={dIdx} className="flex items-center justify-between text-sm bg-white p-2 rounded border border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-700">📎 {deliverable.filename}</span>
+                            <span className="text-gray-500 text-xs">
+                              ({(deliverable.size / 1024 / 1024).toFixed(2)} MB)
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => handleDownloadDeliverable(idx, dIdx, deliverable.filename)}
+                            className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                          >
+                            Download
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    {milestone.notes && milestone.notes.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <p className="text-xs font-semibold text-gray-600 mb-1">Notes:</p>
+                        {milestone.notes.map((note, nIdx) => (
+                          <p key={nIdx} className="text-sm text-gray-700">{note.text}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  {/* Freelancer: Upload Deliverables */}
                   {isFreelancer && milestone.status === 'in_progress' && (
-                    <button
-                      onClick={() => handleCompleteMilestone(idx)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                      Mark as Completed
-                    </button>
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">Upload Deliverables:</h4>
+                      <input
+                        type="file"
+                        multiple
+                        onChange={(e) => handleFileSelect(idx, e.target.files)}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 mb-2"
+                      />
+                      <textarea
+                        placeholder="Add notes (optional)"
+                        value={deliveryNotes[idx] || ''}
+                        onChange={(e) => setDeliveryNotes(prev => ({ ...prev, [idx]: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-2"
+                        rows="2"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleUploadDeliverables(idx)}
+                          disabled={uploadingFiles[idx]}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 text-sm"
+                        >
+                          {uploadingFiles[idx] ? 'Uploading...' : 'Upload Files'}
+                        </button>
+                        {milestone.deliverables && milestone.deliverables.length > 0 && (
+                          <button
+                            onClick={() => handleCompleteMilestone(idx)}
+                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                          >
+                            Mark as Completed
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   )}
 
                   {/* Client payment actions */}
                   {isClient && milestone.status === 'completed' && paypalClientId && (
-                    <div className="w-full">
+                    <div className="bg-green-50 rounded-lg p-4">
+                      <p className="text-sm text-gray-700 mb-3">
+                        Freelancer has completed this milestone. Review the deliverables and make payment.
+                      </p>
                       <PayPalScriptProvider options={{ 'client-id': paypalClientId, currency: 'USD' }}>
                         <PayPalButtons
                           createOrder={async () => await createPayPalOrder(idx)}
@@ -373,9 +508,11 @@ const ContractView = () => {
                   )}
 
                   {milestone.status === 'paid' && (
-                    <p className="text-sm text-green-600">
-                      ✓ Paid on {new Date(milestone.paidAt).toLocaleDateString()}
-                    </p>
+                    <div className="bg-green-100 rounded-lg p-3">
+                      <p className="text-sm text-green-700">
+                        ✓ Milestone completed and paid on {new Date(milestone.paidAt).toLocaleDateString()}
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>

@@ -4,6 +4,43 @@ const Project = require('../model/ProjectSchema');
 const User = require('../model/User');
 const { generateContract } = require('../services/contractAIService');
 const ioService = require('../services/io');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Configure multer for deliverable uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = 'uploads/deliverables';
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'deliverable-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  fileFilter: function (req, file, cb) {
+    // Allow common file types
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|zip|rar|mp4|mov|avi/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Allowed: images, PDFs, documents, videos, archives'));
+    }
+  }
+});
+
+exports.uploadMiddleware = upload.array('deliverables', 10);
 
 /**
  * Generate and create contract after proposal acceptance
@@ -246,6 +283,83 @@ exports.acceptContract = async (req, res) => {
 };
 
 /**
+ * Upload deliverables for a milestone
+ */
+exports.uploadDeliverables = async (req, res) => {
+  try {
+    const { contractId, milestoneIndex } = req.params;
+    const { notes } = req.body;
+    const userId = req.user.id;
+    
+    const contract = await Contract.findById(contractId);
+    
+    if (!contract) {
+      return res.status(404).json({ error: 'Contract not found' });
+    }
+    
+    // Only freelancer can upload deliverables
+    if (contract.freelancerId.toString() !== userId) {
+      return res.status(403).json({ error: 'Only freelancer can upload deliverables' });
+    }
+    
+    if (!contract.milestones[milestoneIndex]) {
+      return res.status(404).json({ error: 'Milestone not found' });
+    }
+    
+    const milestone = contract.milestones[milestoneIndex];
+    
+    if (milestone.status === 'paid') {
+      return res.status(400).json({ error: 'Cannot upload deliverables for paid milestone' });
+    }
+    
+    // Process uploaded files
+    const deliverables = req.files.map(file => ({
+      filename: file.originalname,
+      path: file.path,
+      size: file.size,
+      uploadedAt: new Date()
+    }));
+    
+    if (!milestone.deliverables) {
+      milestone.deliverables = [];
+    }
+    milestone.deliverables.push(...deliverables);
+    
+    if (notes) {
+      if (!milestone.notes) {
+        milestone.notes = [];
+      }
+      milestone.notes.push({
+        text: notes,
+        createdAt: new Date(),
+        createdBy: userId
+      });
+    }
+    
+    await contract.save();
+    
+    // Notify client
+    const io = ioService.getIO();
+    if (io) {
+      io.to(`user_${contract.clientId}`).emit('deliverablesUploaded', { 
+        contractId: contract._id,
+        milestoneIndex,
+        deliverableCount: deliverables.length
+      });
+    }
+    
+    res.json({ 
+      message: 'Deliverables uploaded successfully',
+      deliverables,
+      milestone: contract.milestones[milestoneIndex]
+    });
+  } catch (error) {
+    console.error('Error uploading deliverables:', error);
+    res.status(500).json({ error: 'Failed to upload deliverables' });
+  }
+};
+
+/**
  * Complete a milestone
  */
 exports.completeMilestone = async (req, res) => {
@@ -268,8 +382,15 @@ exports.completeMilestone = async (req, res) => {
       return res.status(404).json({ error: 'Milestone not found' });
     }
     
-    contract.milestones[milestoneIndex].status = 'completed';
-    contract.milestones[milestoneIndex].completedAt = new Date();
+    const milestone = contract.milestones[milestoneIndex];
+    
+    // Check if deliverables are uploaded
+    if (!milestone.deliverables || milestone.deliverables.length === 0) {
+      return res.status(400).json({ error: 'Please upload deliverables before completing milestone' });
+    }
+    
+    milestone.status = 'completed';
+    milestone.completedAt = new Date();
     
     await contract.save();
     
@@ -358,6 +479,63 @@ exports.recordMilestonePayment = async (req, res) => {
   } catch (error) {
     console.error('Error recording payment:', error);
     res.status(500).json({ error: 'Failed to record payment' });
+  }
+};
+
+/**
+ * Dispute and request refund for a milestone
+ */
+exports.disputeMilestone = async (req, res) => {
+  try {
+    const { contractId, milestoneIndex } = req.params;
+    const { reason } = req.body;
+    const userId = req.user.id;
+    
+    const contract = await Contract.findById(contractId);
+    
+    if (!contract) {
+      return res.status(404).json({ error: 'Contract not found' });
+    }
+    
+    // Only client can dispute
+    if (contract.clientId.toString() !== userId) {
+      return res.status(403).json({ error: 'Only client can dispute milestones' });
+    }
+    
+    if (!contract.milestones[milestoneIndex]) {
+      return res.status(404).json({ error: 'Milestone not found' });
+    }
+    
+    const milestone = contract.milestones[milestoneIndex];
+    
+    if (milestone.status !== 'paid') {
+      return res.status(400).json({ error: 'Can only dispute paid milestones' });
+    }
+    
+    // Mark milestone as disputed
+    milestone.disputed = true;
+    milestone.disputeReason = reason;
+    milestone.disputedAt = new Date();
+    
+    await contract.save();
+    
+    // Notify freelancer
+    const io = ioService.getIO();
+    if (io) {
+      io.to(`user_${contract.freelancerId}`).emit('milestoneDisputed', { 
+        contractId: contract._id,
+        milestoneIndex,
+        reason
+      });
+    }
+    
+    res.json({ 
+      message: 'Dispute filed successfully. Admin will review.',
+      milestone: contract.milestones[milestoneIndex]
+    });
+  } catch (error) {
+    console.error('Error disputing milestone:', error);
+    res.status(500).json({ error: 'Failed to file dispute' });
   }
 };
 
