@@ -64,7 +64,7 @@ const Signup = () => {
         }, 1500);
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Signup failed');
+        throw new Error(errorData.error || errorData.message || 'Signup failed');
       }
     } catch (error) {
       console.error('Error:', error);

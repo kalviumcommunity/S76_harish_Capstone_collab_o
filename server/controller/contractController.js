@@ -4,6 +4,7 @@ const Project = require('../model/ProjectSchema');
 const User = require('../model/User');
 const { generateContract } = require('../services/contractAIService');
 const ioService = require('../services/io');
+const emailService = require('../services/emailService');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -133,6 +134,21 @@ exports.generateContractForProposal = async (req, res) => {
       });
     }
     
+    // Send email notifications
+    emailService.sendContractGeneratedEmail(
+      client.email,
+      client.username,
+      'client',
+      project.title
+    ).catch(err => console.error('Email error:', err));
+    
+    emailService.sendContractGeneratedEmail(
+      proposal.freelancerId.email,
+      proposal.freelancerId.username,
+      'freelancer',
+      project.title
+    ).catch(err => console.error('Email error:', err));
+    
     res.status(201).json({ 
       message: 'Contract generated successfully',
       contract 
@@ -260,6 +276,13 @@ exports.acceptContract = async (req, res) => {
     
     await contract.save();
     
+    // Populate for email
+    await contract.populate([
+      { path: 'clientId', select: 'username email' },
+      { path: 'freelancerId', select: 'username email' },
+      { path: 'projectId', select: 'title' }
+    ]);
+    
     // Notify other party
     const io = ioService.getIO();
     if (io) {
@@ -270,6 +293,19 @@ exports.acceptContract = async (req, res) => {
         fullyExecuted: contract.status === 'fully_signed'
       });
     }
+    
+    // Send email to other party
+    const otherParty = isClient ? contract.freelancerId : contract.clientId;
+    const signer = isClient ? contract.clientId : contract.freelancerId;
+    const fullyExecuted = contract.status === 'fully_signed';
+    
+    emailService.sendContractSignedEmail(
+      otherParty.email,
+      otherParty.username,
+      signer.username,
+      contract.projectId.title,
+      fullyExecuted
+    ).catch(err => console.error('Email error:', err));
     
     res.json({ 
       message: 'Contract accepted successfully',
@@ -338,6 +374,13 @@ exports.uploadDeliverables = async (req, res) => {
     
     await contract.save();
     
+    // Populate for email
+    await contract.populate([
+      { path: 'clientId', select: 'username email' },
+      { path: 'freelancerId', select: 'username email' },
+      { path: 'projectId', select: 'title' }
+    ]);
+    
     // Notify client
     const io = ioService.getIO();
     if (io) {
@@ -347,6 +390,16 @@ exports.uploadDeliverables = async (req, res) => {
         deliverableCount: deliverables.length
       });
     }
+    
+    // Send email to client
+    emailService.sendDeliverablesUploadedEmail(
+      contract.clientId.email,
+      contract.clientId.username,
+      contract.freelancerId.username,
+      contract.projectId.title,
+      milestone.description,
+      deliverables.length
+    ).catch(err => console.error('Email error:', err));
     
     res.json({ 
       message: 'Deliverables uploaded successfully',
@@ -394,6 +447,13 @@ exports.completeMilestone = async (req, res) => {
     
     await contract.save();
     
+    // Populate for email
+    await contract.populate([
+      { path: 'clientId', select: 'username email' },
+      { path: 'freelancerId', select: 'username email' },
+      { path: 'projectId', select: 'title' }
+    ]);
+    
     // Notify client
     const io = ioService.getIO();
     if (io) {
@@ -403,6 +463,16 @@ exports.completeMilestone = async (req, res) => {
         milestone: contract.milestones[milestoneIndex]
       });
     }
+    
+    // Send email to client
+    emailService.sendMilestoneCompletedEmail(
+      contract.clientId.email,
+      contract.clientId.username,
+      contract.freelancerId.username,
+      contract.projectId.title,
+      milestone.description,
+      milestone.amount
+    ).catch(err => console.error('Email error:', err));
     
     res.json({ 
       message: 'Milestone marked as completed',
@@ -460,6 +530,13 @@ exports.recordMilestonePayment = async (req, res) => {
     
     await contract.save();
     
+    // Populate for email
+    await contract.populate([
+      { path: 'clientId', select: 'username email' },
+      { path: 'freelancerId', select: 'username email' },
+      { path: 'projectId', select: 'title' }
+    ]);
+    
     // Notify freelancer
     const io = ioService.getIO();
     if (io) {
@@ -469,6 +546,34 @@ exports.recordMilestonePayment = async (req, res) => {
         amount: milestone.amount,
         totalPaid: contract.totalPaid
       });
+    }
+    
+    // Send email to freelancer
+    emailService.sendPaymentReceivedEmail(
+      contract.freelancerId.email,
+      contract.freelancerId.username,
+      contract.clientId.username,
+      contract.projectId.title,
+      milestone.amount,
+      contract.totalPaid,
+      contract.paymentAmount
+    ).catch(err => console.error('Email error:', err));
+    
+    // Send completion email if all milestones paid
+    if (allPaid) {
+      emailService.sendProjectCompletedEmail(
+        contract.clientId.email,
+        contract.clientId.username,
+        contract.projectId.title,
+        contract.paymentAmount
+      ).catch(err => console.error('Email error:', err));
+      
+      emailService.sendProjectCompletedEmail(
+        contract.freelancerId.email,
+        contract.freelancerId.username,
+        contract.projectId.title,
+        contract.paymentAmount
+      ).catch(err => console.error('Email error:', err));
     }
     
     res.json({ 
