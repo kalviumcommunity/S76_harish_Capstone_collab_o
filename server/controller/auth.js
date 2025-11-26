@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
 const User = require('../model/User');
+const emailService = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
@@ -29,6 +30,22 @@ const signup = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 12);
         const user = new User({ username, email, password: hashedPassword });
         await user.save();
+
+        console.log('✅ User created:', email);
+        console.log('📧 Attempting to send welcome email...');
+        
+        // Send welcome email
+        emailService.sendWelcomeEmail(email, username, user.role || 'user')
+          .then(result => {
+            if (result && result.success) {
+              console.log('✅ Welcome email sent successfully to:', email);
+            } else {
+              console.log('❌ Welcome email failed:', result ? result.error : 'Unknown error');
+            }
+          })
+          .catch(err => {
+            console.error('❌ Welcome email error:', err.message);
+          });
 
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
         res.json({ token });

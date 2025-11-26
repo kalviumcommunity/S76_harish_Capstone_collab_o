@@ -1,5 +1,6 @@
 const Proposal = require('../model/Proposal');
 const ioService = require('../services/io');
+const emailService = require('../services/emailService');
 const Project = require('../model/ProjectSchema');
 // const Project = require('../model/Project');
 const multer = require('multer');
@@ -81,6 +82,16 @@ exports.acceptProposal = async (req, res) => {
       }
     } catch (emitErr) {
       console.error('Failed to emit socket event for accepted proposal', emitErr);
+    }
+    
+    // Send email to freelancer
+    if (proposal.freelancerId && proposal.freelancerId.email) {
+      emailService.sendProposalAcceptedEmail(
+        proposal.freelancerId.email,
+        proposal.freelancerId.username || proposal.freelancerId.name || 'Freelancer',
+        proposal.projectId?.title || 'Project',
+        proposal.projectId?.createdBy?.username || proposal.projectId?.createdBy?.name || 'Client'
+      ).catch(err => console.error('Email error:', err));
     }
 
     res.status(200).json(proposal);
